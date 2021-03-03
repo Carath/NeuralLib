@@ -107,13 +107,13 @@ void input_control(void)
 			prediction(network_loaded, image_input);
 
 			// If modified MNIST inputs are used, don't search a number in the last index:
-			int search_span = modified_MNIST_option ? answer_size - 1 : answer_size;
+			int search_span = MNIST_option ? answer_size - 1 : answer_size;
 
 			Number confidence_level;
 
 			int max_value_index = findMostProbable(the_answer, search_span, &confidence_level);
 
-			sprintf(answer_str, "%d", labels[max_value_index]);
+			sprintf(answer_str, "%d", max_value_index);
 			sprintf(confidence_str, "%.0f %%", 100. * confidence_level);
 
 			// Printing the answer in the console:
@@ -129,7 +129,7 @@ void input_control(void)
 
 
 // Check if the given coordinates are inside the given rectangle:
-inline int is_in_rect(SDL_Rect *rect, int x, int y)
+inline int is_in_rect(const SDL_Rect *rect, int x, int y)
 {
 	return rect -> x <= x && x <= (rect -> x + rect -> w) && rect -> y <= y && y <= (rect -> y + rect -> h);
 }

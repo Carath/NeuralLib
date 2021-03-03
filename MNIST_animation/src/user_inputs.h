@@ -11,7 +11,7 @@
 #define MNIST_IMAGE_HEIGHT 28
 
 
-extern const int modified_MNIST_option;
+extern int MNIST_option;
 
 extern SDL_Renderer *renderer;
 
@@ -31,8 +31,6 @@ extern int render_scene;
 extern int redraw_scene;
 extern int clear_state;
 
-extern const int labels[];
-
 extern char answer_str[10];
 extern char confidence_str[10];
 
@@ -48,7 +46,7 @@ void input_control(void);
 
 
 // Check if the given coordinates are inside the given rectangle:
-int is_in_rect(SDL_Rect *rect, int x, int y);
+int is_in_rect(const SDL_Rect *rect, int x, int y);
 
 
 // Fills with white pixels:

@@ -38,7 +38,7 @@ SDL_Rect rect_frame =
 };
 
 
-void draw_neurons_line(SDL_Rect *rectangle, NeuronLayer *layer,
+void draw_neurons_line(SDL_Rect *rectangle, const NeuronLayer *layer,
 	int neurons_number_to_draw, int line_start_Xpos, int start)
 {
 	rectangle -> x = line_start_Xpos;
@@ -68,7 +68,7 @@ void draw_neurons_line(SDL_Rect *rectangle, NeuronLayer *layer,
 
 
 // Returns the Y-coordinate at which the network drawing ends:
-int draw_network(NeuralNetwork *network)
+int draw_network(const NeuralNetwork *network)
 {
 	NeuronLayer *layer = network -> Layers;
 
@@ -110,7 +110,9 @@ int draw_network(NeuralNetwork *network)
 		{
 			rectangle.y -= 10;
 
-			SDLA_SlowDrawText(font_small, &Yellow, line_start_Xpos + 2, rectangle.y, "0 1 2 3 4 5 6 7 8 9");
+			char *labels = MNIST_option ? "0 1 2 3 4 5 6 7 8 9 M" : "0 1 2 3 4 5 6 7 8 9";
+
+			SDLA_SlowDrawText(font_small, &Yellow, line_start_Xpos + 2, rectangle.y, labels);
 		}
 	}
 

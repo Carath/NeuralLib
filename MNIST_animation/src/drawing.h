@@ -6,6 +6,8 @@
 #include "animation_settings.h"
 
 
+extern int MNIST_option;
+
 extern SDL_Renderer *renderer;
 
 extern TTF_Font *font_big;
@@ -27,12 +29,12 @@ extern char answer_str[10];
 extern char confidence_str[10];
 
 
-void draw_neurons_line(SDL_Rect *rectangle, NeuronLayer *layer,
+void draw_neurons_line(SDL_Rect *rectangle, const NeuronLayer *layer,
 	int neurons_number_to_draw, int line_start_pos, int start);
 
 
 // Returns the Y-coordinate at which the network drawing ends:
-int draw_network(NeuralNetwork *network);
+int draw_network(const NeuralNetwork *network);
 
 
 // Main drawing function:

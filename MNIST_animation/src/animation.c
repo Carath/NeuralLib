@@ -9,7 +9,7 @@
 
 // Global variables:
 
-const int modified_MNIST_option = 0;
+int MNIST_option;
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -36,8 +36,6 @@ int render_scene;
 int redraw_scene;
 int clear_state;
 
-const int labels[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-
 char layer_str[50];
 char answer_str[10];
 char confidence_str[10];
@@ -47,7 +45,7 @@ CenteringOption centerOpt = RECENTERING; // better!
 
 
 // Animating the recognition of the MNIST dataset:
-void MNIST_animation(void)
+void MNIST_animation(int modified_MNIST_option)
 {
 	////////////////////////////////////////////////////////////
 	// Initializing SDLA - rendering:
@@ -67,12 +65,14 @@ void MNIST_animation(void)
 	////////////////////////////////////////////////////////////
 	// Loading a neural network:
 
+	MNIST_option = modified_MNIST_option;
+
 	int max_batch_size = 100;
 
 	if (modified_MNIST_option)
-		network_loaded = loadNetwork("MNIST_modified", max_batch_size);
+		network_loaded = loadNetwork("saves/MNIST_modified", max_batch_size);
 	else
-		network_loaded = loadNetwork("MNIST_learned", max_batch_size);
+		network_loaded = loadNetwork("saves/MNIST_learned", max_batch_size);
 
 	if (network_loaded == NULL)
 	{
@@ -157,8 +157,8 @@ void MNIST_animation(void)
 
 	SDL_DestroyTexture(texture_drawing);
 
-	freeInputs(image_input);
-	freeNetwork(network_loaded);
+	freeInputs(&image_input);
+	freeNetwork(&network_loaded);
 
 	TTF_CloseFont(font_small);
 	TTF_CloseFont(font_medium);

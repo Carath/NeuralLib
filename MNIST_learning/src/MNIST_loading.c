@@ -7,7 +7,7 @@
 #include "MNIST_loading.h"
 
 
-Inputs* MNIST_createInputs(char *foldername, MNIST_mode mode)
+Inputs* MNIST_createInputs(const char *foldername, MNIST_mode mode)
 {
 	char images_filename[MAX_PATH_LENGTH];
 	char labels_filename[MAX_PATH_LENGTH];
@@ -41,7 +41,7 @@ Inputs* MNIST_createInputs(char *foldername, MNIST_mode mode)
 }
 
 
-Number** MNIST_loadImages(char *filename, int *input_number, int *image_pixels)
+Number** MNIST_loadImages(const char *filename, int *input_number, int *image_pixels)
 {
 	FILE *file = fopen(filename, "rb");
 
@@ -96,7 +96,7 @@ Number** MNIST_loadImages(char *filename, int *input_number, int *image_pixels)
 }
 
 
-Number** MNIST_loadLabels(char *filename, int input_number) // 'input_number' found while loading the images.
+Number** MNIST_loadLabels(const char *filename, int input_number) // 'input_number' found while loading the images.
 {
 	FILE *file = fopen(filename, "rb");
 

@@ -1,18 +1,18 @@
 //////////////////////////////////////////////////////////
-// NeuralLib v1.2
+// NeuralLib v1.3
 //////////////////////////////////////////////////////////
 
+// This file contains the public definitions and functions from the 'NeuralLib' library.
 
 #ifndef NEURAL_LIB_H
 #define NEURAL_LIB_H
 
-
-// This file contains the public definitions and functions from the 'NeuralLib' library.
-
-
 //////////////////////////////////////////////////////////
 // settings.h
 //////////////////////////////////////////////////////////
+
+
+typedef enum {INFOS, ALL} PrintOption;
 
 
 #if defined _FLOAT
@@ -23,11 +23,41 @@
 #endif
 
 
+// Used to get the length of an array on the stack, in the same context it is defined.
+// Do _not_ use this on an array allocated in the heap, or on an array passed as parameter of a function.
+#ifndef ARRAY_LENGTH
+#define ARRAY_LENGTH(array) \
+	(sizeof(array) / sizeof(*(array)))
+#endif
+
+#ifndef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#endif
+
+#ifndef MAX
 #define MAX(x, y) ((x) < (y) ? (y) : (x))
+#endif
+
+// Returns the arg name as a string:
+#ifndef TO_STRING
+#define TO_STRING(STRING) #STRING
+#endif
 
 
-typedef enum {INFOS, ALL} PrintOption;
+// Used to check the equality of lengths between two arrays. Returns said length.
+// Warning: use this only in the same context of the definition of said arrays.
+#ifndef ARRAYS_COMPARE_LENGTH
+#define ARRAYS_COMPARE_LENGTH(array_1, array_2)														\
+({																									\
+	if (ARRAY_LENGTH(array_1) != ARRAY_LENGTH(array_2))												\
+	{																								\
+		printf("\nIncompatible lengths between '%s' and '%s': %ld vs %ld.\n",						\
+			TO_STRING(array_1), TO_STRING(array_2), ARRAY_LENGTH(array_1), ARRAY_LENGTH(array_2));	\
+		exit(EXIT_FAILURE);																			\
+	}																								\
+	(int) ARRAY_LENGTH(array_1);																	\
+})
+#endif
 
 
 //////////////////////////////////////////////////////////
@@ -38,15 +68,15 @@ typedef enum {INFOS, ALL} PrintOption;
 // For performance: don't change the following order without doing it for the switches too.
 // Also Softmax needs to be placed at the beginning or end of the list:
 #define ACTIVATION_APPLY(FUN)	\
-	FUN(Id)			\
-	FUN(Heaviside)	\
-	FUN(Sigmoid)	\
-	FUN(Tanh)		\
-	FUN(ReLu)		\
-	FUN(LReLu)		\
-	FUN(ELu)		\
-	FUN(SELu)		\
-	FUN(Softmax)	\
+	FUN(Id)						\
+	FUN(Heaviside)				\
+	FUN(Sigmoid)				\
+	FUN(Tanh)					\
+	FUN(ReLu)					\
+	FUN(LReLu)					\
+	FUN(ELu)					\
+	FUN(SELu)					\
+	FUN(Softmax)				\
 
 
 #define ACTIVATION_ID(ENUM) ENUM,
@@ -71,28 +101,29 @@ typedef struct
 } Inputs;
 
 
-Inputs* createInputs(int InputNumber, int QuestionsSize, int AnswersSize, Number **Questions, Number **Answers);
+Inputs* createInputs(int InputNumber, int QuestionsSize, int AnswersSize, Number** Questions, Number** Answers);
 
 
-void freeInputs(Inputs *inputs);
+// Frees the given Inputs passed by address, and sets it to NULL.
+void freeInputs(Inputs **inputs);
 
 
-void printInputs(Inputs *inputs, PrintOption opt);
+void printInputs(const Inputs *inputs, PrintOption opt);
 
 
-int saveInputs(Inputs *inputs, char *foldername);
+int saveInputs(const Inputs *inputs, const char *foldername);
 
 
-Inputs* loadInputs(char *foldername);
+Inputs* loadInputs(const char *foldername);
 
 
 // Finds the mean and standard deviation vectors of the given inputs, stored in a 2 x QuestionsSize matrix.
 // This matrix is returned in order to be able to normalize other inputs by the previous mean and std deviation.
-Number** find_mean_stddev_matrix(Inputs *inputs);
+Number** find_mean_stddev_matrix(const Inputs *inputs);
 
 
 // Normalizes the given inputs, so that: mean = 0 and standard deviation = 1.
-void normalize(Inputs *inputs, Number **mean_stddev_matrix);
+void normalize(Inputs *inputs, Number* const* mean_stddev_matrix);
 
 
 // Applying the Fisher–Yates shuffle on the given inputs:
@@ -131,26 +162,26 @@ typedef struct
 NeuralNetwork* createNetwork(int InputSize, int LayersNumber, int *NeuronsNumberArray, Activation *funArray, int MaxBatchSize);
 
 
-// Freeing the network:
-void freeNetwork(NeuralNetwork *network);
+// Frees the given neural network passed by address, and sets it to NULL.
+void freeNetwork(NeuralNetwork **network);
 
 
-int network_inputSize(NeuralNetwork *network);
+int network_inputSize(const NeuralNetwork *network);
 
 
-int network_outputSize(NeuralNetwork *network);
+int network_outputSize(const NeuralNetwork *network);
 
 
 // Printing a network's content:
-void printNetwork(NeuralNetwork *network, PrintOption opt);
+void printNetwork(const NeuralNetwork *network, PrintOption opt);
 
 
 // Saving a neural network. N.B: MaxBatchSize doesn't need to be saved, for its value is arbitrary:
-int saveNetwork(NeuralNetwork *network, char *foldername);
+int saveNetwork(const NeuralNetwork *network, const char *foldername);
 
 
 // Loading a neural network:
-NeuralNetwork* loadNetwork(char *foldername, int MaxBatchSize);
+NeuralNetwork* loadNetwork(const char *foldername, int MaxBatchSize);
 
 
 //////////////////////////////////////////////////////////
@@ -169,8 +200,12 @@ typedef enum {MAX_VALUE, MAX_CORRECT, ALL_CORRECT} RecognitionMode;
 // For binary class problems, returns the binary answer.
 // For mutally exclusive class problems, returns the index of the guessed class.
 // For mixed problems, one can shift 'answer' and modify 'len' accordingly on each subset which are binary/exclusive.
-// Optional: confidence_level is filled if a non-NULL arg is passed.
+// Optional: 'confidence_level' is filled if a non-NULL arg is passed.
 int findMostProbable(const Number *answer, int len, Number *confidence_level);
+
+
+// Finds the 'bufferLength' greater values in 'valuesArray', and store their index in 'buffer', in descending order:
+void findGreaterValuesIndex(int *buffer, int bufferLength, const Number *valuesArray, int valuesArrayLength);
 
 
 //////////////////////////////////////////////////////////
@@ -225,7 +260,8 @@ typedef struct
 LearningParameters* initLearningParameters(void);
 
 
-void freeParameters(LearningParameters *params);
+// Frees the given LearningParameters passed by address, and sets it to NULL.
+void freeParameters(LearningParameters **params);
 
 
 // Make the neural network learn the given inputs, while using the given parameters:
@@ -251,20 +287,21 @@ Number* createVector(int len);
 // Filled with 0s:
 Number** createMatrix(int rows, int cols);
 
-// This is equivalent to a regular free() call:
-void freeVector(Number *vector);
+// Frees a vector, passed by address, and sets it to NULL:
+void freeVector(Number **vector);
 
-void freeMatrix(Number **matrix, int rows);
+// Frees a matrix, passed by address, and sets it to NULL:
+void freeMatrix(Number ***matrix, int rows);
 
-void printVector(Number *vector, int len);
+void printVector(const Number *vector, int len);
 
-void printFlatMatrix(Number *matrix, int rows, int cols);
+void printFlatMatrix(const Number *matrix, int rows, int cols);
 
-void printMatrix(Number **matrix, int rows, int cols);
+void printMatrix(Number* const* matrix, int rows, int cols);
 
 void copyVector(Number *dest, const Number *src, int len);
 
-void copyMatrix(Number **dest, const Number **src, int rows, int cols);
+void copyMatrix(Number **dest, Number* const* src, int rows, int cols);
 
 
 //////////////////////////////////////////////////////////
@@ -273,25 +310,34 @@ void copyMatrix(Number **dest, const Number **src, int rows, int cols);
 
 
 // Creating a folder:
-void createFolder(char *foldername);
+void createFolder(const char *foldername);
+
+
+// Moves a file (and eventually renames it) to another location.
+// Returns 1 on success, 0 else (may happen if 'dest_path' contains non-existent folders).
+int moveFile(const char *dest_path, const char *src_path);
+
+
+// Deletes the given file. Returns 1 on success, 0 else.
+int deleteFile(const char *filename);
 
 
 // Get the size of the given binary file, in bytes:
-long int getFileSize(char *filename);
+long int getFileSize(const char *filename);
 
 
-void save_flat_matrix(Number *matrix, int rows, int cols, char *filename);
+void save_flat_matrix(const Number *matrix, int rows, int cols, const char *filename);
 
 
-void save_matrix(Number **matrix, int rows, int cols, char *filename);
-
-
-// Matrix must alrealy be allocated in memory:
-void load_toFlatMatrix(Number *matrix, int rows, int cols, char *filename);
+void save_matrix(Number* const* matrix, int rows, int cols, const char *filename);
 
 
 // Matrix must alrealy be allocated in memory:
-void load_toMatrix(Number **matrix, int rows, int cols, char *filename);
+void load_toFlatMatrix(Number *matrix, int rows, int cols, const char *filename);
+
+
+// Matrix must alrealy be allocated in memory:
+void load_toMatrix(Number **matrix, int rows, int cols, const char *filename);
 
 
 //////////////////////////////////////////////////////////
@@ -303,7 +349,7 @@ typedef enum {MAX_POOLING, AVERAGE_POOLING} PoolingMode;
 
 
 // Print in the console a grayscale image contained in a 1-dimensional array:
-void printGrayscaleImage(Number *image, int width, int height);
+void printGrayscaleImage(const Number *image, int width, int height);
 
 
 void pooling(Number *output, const Number *input, int output_width, int output_height,
@@ -327,19 +373,8 @@ Number uniform_random(Number min, Number max);
 //////////////////////////////////////////////////////////
 
 
-#include <time.h>
-
-
-// Simple function, but may give erroneous results if multithreading is used:
-double time_elapsed(clock_t start);
-
-
-// Write the current time in the given struct:
-void get_time(struct timespec *current_time);
-
-
-// More precise timer: (POSIX)
-double precise_time(struct timespec *start, struct timespec *finish);
+// Used to measure elapsed time. Thread safe.
+double get_time(void);
 
 
 //////////////////////////////////////////////////////////

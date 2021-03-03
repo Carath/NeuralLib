@@ -16,11 +16,11 @@
 typedef enum {MNIST_TRAINING, MNIST_VALIDATION} MNIST_mode;
 
 
-Inputs* MNIST_createInputs(char *foldername, MNIST_mode mode);
+Inputs* MNIST_createInputs(const char *foldername, MNIST_mode mode);
 
-Number** MNIST_loadImages(char *filename, int *input_number, int *image_pixels);
+Number** MNIST_loadImages(const char *filename, int *input_number, int *image_pixels);
 
-Number** MNIST_loadLabels(char *filename, int input_number);
+Number** MNIST_loadLabels(const char *filename, int input_number);
 
 
 #endif

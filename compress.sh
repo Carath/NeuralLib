@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script purpose is clean the whole project folder, and compress it
+# This script purpose is to clean the whole project folder, and compress it
 # to an archive placed in the same directory than the project is.
 # Launch it with the command:
 # sh compress.sh
@@ -21,7 +21,7 @@ clean()
 }
 
 
-clean Neural_Network
+clean NeuralLib
 clean MNIST_learning
 clean MNIST_animation
 

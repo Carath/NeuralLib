@@ -7,7 +7,7 @@
 
 
 // Animating the recognition of the MNIST dataset:
-void MNIST_animation(void);
+void MNIST_animation(int modified_MNIST_option);
 
 
 #endif

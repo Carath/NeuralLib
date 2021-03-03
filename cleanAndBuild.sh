@@ -21,7 +21,7 @@ cleanAndBuild()
 
 
 # Do not change the following execution order:
-cleanAndBuild Neural_Network
+cleanAndBuild NeuralLib
 cleanAndBuild MNIST_learning
 cleanAndBuild MNIST_animation
 

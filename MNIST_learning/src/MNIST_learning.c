@@ -59,7 +59,7 @@ static Inputs* modified_MNIST_inputs(const Inputs *MNIST_inputs)
 
 
 // Printing the first 'number_to_print' inputs of the MNIST training dataset:
-void MNIST_print(char *MNIST_dir_path, int number_to_print)
+void MNIST_print(const char *MNIST_dir_path, int number_to_print)
 {
 	printf("\n === Printing MNIST ===\n\n");
 
@@ -69,26 +69,27 @@ void MNIST_print(char *MNIST_dir_path, int number_to_print)
 	for (int i = 0; i < number_to_print; ++i)
 		printGrayscaleImage(training_inputs -> Questions[i], MNIST_IMAGE_WIDTH, MNIST_IMAGE_HEIGHT); // 28 x 28 images.
 
-	freeInputs(training_inputs);
+	freeInputs(&training_inputs);
 }
 
 
-// Learning the MNIST dataset:
-void MNIST_learn(char *MNIST_dir_path)
+// Learning the standard MNIST dataset:
+void MNIST_learn(const char *MNIST_dir_path)
 {
 	printf("\n === Learning: MNIST ===\n\n");
 
-	char save_filename[] = "MNIST_learned";
+	char save_filename[] = "saves/MNIST_learned";
 
 	// Loading the MNIST training dataset:
 	Inputs *training_inputs = MNIST_createInputs(MNIST_dir_path, MNIST_TRAINING);
 
 	// Creating a neural network:
 
-	int layer_number = 3;
 	int max_batch_size = 100;
 	int NeuronsNumberArray[] = {512, 32, 10};
 	Activation funArray[] = {ReLu, ReLu, Softmax};
+
+	int layer_number = ARRAYS_COMPARE_LENGTH(NeuronsNumberArray, funArray);
 
 	NeuralNetwork *network = createNetwork(training_inputs -> QuestionsSize, layer_number, NeuronsNumberArray,
 		funArray, max_batch_size);
@@ -147,34 +148,35 @@ void MNIST_learn(char *MNIST_dir_path)
 
 	// Freeing everything:
 
-	freeNetwork(network_loaded);
-	freeInputs(validation_inputs);
-	freeParameters(params);
-	freeNetwork(network);
-	freeInputs(training_inputs);
+	freeNetwork(&network_loaded);
+	freeInputs(&validation_inputs);
+	freeParameters(&params);
+	freeNetwork(&network);
+	freeInputs(&training_inputs);
 }
 
 
 // Learning the modified MNIST dataset - non exclusive class recognition:
-void MNIST_modified(char *MNIST_dir_path)
+void MNIST_modified(const char *MNIST_dir_path)
 {
 	printf("\n === Learning: MNIST modified ===\n\n");
 
-	char save_filename[] = "MNIST_modified";
+	char save_filename[] = "saves/MNIST_modified";
 
 	// Loading some inputs to learn:
 	Inputs *training_inputs = MNIST_createInputs(MNIST_dir_path, MNIST_TRAINING);
 
 	Inputs *new_training_inputs = modified_MNIST_inputs(training_inputs);
 
-	freeInputs(training_inputs);
+	freeInputs(&training_inputs);
 
 	// Creating a neural network:
 
-	int layer_number = 4;
 	int max_batch_size = 100;
 	int NeuronsNumberArray[] = {512, 64, 32, 11};
 	Activation funArray[] = {ReLu, ReLu, ReLu, Sigmoid};
+
+	int layer_number = ARRAYS_COMPARE_LENGTH(NeuronsNumberArray, funArray);
 
 	NeuralNetwork *network = createNetwork(new_training_inputs -> QuestionsSize, layer_number, NeuronsNumberArray,
 		funArray, max_batch_size);
@@ -210,7 +212,7 @@ void MNIST_modified(char *MNIST_dir_path)
 
 	Inputs *new_validation_inputs = modified_MNIST_inputs(validation_inputs);
 
-	freeInputs(validation_inputs);
+	freeInputs(&validation_inputs);
 
 	RecognitionMode recog = ALL_CORRECT; // non exclusive class recognition!
 
@@ -226,8 +228,8 @@ void MNIST_modified(char *MNIST_dir_path)
 
 	// Freeing everything:
 
-	freeInputs(new_validation_inputs);
-	freeParameters(params);
-	freeNetwork(network);
-	freeInputs(new_training_inputs);
+	freeInputs(&new_validation_inputs);
+	freeParameters(&params);
+	freeNetwork(&network);
+	freeInputs(&new_training_inputs);
 }
