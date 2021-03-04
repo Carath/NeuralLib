@@ -1,12 +1,12 @@
 ##########################################################
-# Global compiler settings:
-include ../compiler_settings.mk
+# Global build settings:
+include ../global_settings.mk
 
 ##########################################################
 # Settings:
 
 # Executable name:
-EXE = test_NeuralLib
+EXE = test.exe
 
 # Produced static library name:
 NEURAL_LIB = ../NeuralLib
@@ -15,7 +15,7 @@ NEURAL_LIB = ../NeuralLib
 SRC_DIR = src
 OBJ_DIR = obj
 
-# Creates the OBJ_DIR folder, if necessary:
+# Creates the OBJ_DIR directory, if necessary:
 $(shell mkdir -p $(OBJ_DIR))
 
 ##########################################################
@@ -23,7 +23,6 @@ $(shell mkdir -p $(OBJ_DIR))
 
 # Used high performance library:
 ifeq ($(HIGH_PERF_LIB), OPENBLAS)
-
 	HIGH_PERF_HEAD_DIR = -I$(HIGH_PERF_PATH)/include
 	HIGH_PERF_LIB_DIR = -L$(HIGH_PERF_PATH)/lib
 	HIGH_PERF_LINKING = -lopenblas
@@ -32,8 +31,7 @@ endif
 ##########################################################
 # Compiler options:
 
-# Necessary for using get_time():
-POSIX_OPT = _POSIX_C_SOURCE=199309L
+# POSIX_OPT = -D_POSIX_C_SOURCE=199309L
 
 # For better performance:
 PROCESSOR_ARCH = -march=native
@@ -41,7 +39,7 @@ PROCESSOR_ARCH = -march=native
 # N.B: gcc for C, g++ for C++, alternative: clang.
 CC = gcc
 CPPFLAGS =
-CFLAGS = -std=c99 -Wall -O2 $(PROCESSOR_ARCH) -D$(POSIX_OPT) -D_$(NUMBER_TYPE) -D_$(HIGH_PERF_LIB) $(HIGH_PERF_HEAD_DIR)
+CFLAGS = -std=c99 -Wall -O2 $(PROCESSOR_ARCH) $(POSIX_OPT) -D_$(NUMBER_TYPE) -D_$(HIGH_PERF_LIB) $(HIGH_PERF_HEAD_DIR)
 LDFLAGS =
 LDLIBS = $(HIGH_PERF_LIB_DIR) $(HIGH_PERF_LINKING) -lm
 
@@ -72,5 +70,6 @@ $(NEURAL_LIB).a: $(OBJ)
 
 ##########################################################
 # Cleaning with 'make clean' the object files:
+
 clean:
 	rm -fv $(EXE) $(NEURAL_LIB).a $(OBJ_DIR)/*

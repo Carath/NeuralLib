@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script purpose is to clean the whole project folder, and compress it
+# This script purpose is to clean the whole project directory, and compress it
 # to an archive placed in the same directory than the project is.
 # Launch it with the command:
 # sh compress.sh
@@ -26,21 +26,21 @@ clean MNIST_learning
 clean MNIST_animation
 
 
-# Cleaning not useful network saves:
-notUsedSavesFolder=MNIST_learning/saves/
+# Cleaning unnecessary network saves:
+notUsedSavesDirectory=MNIST_learning/saves
 echo '\n'//////////////////////////////////////////////////
-echo // Cleaning the folder: $notUsedSavesFolder
+echo // Cleaning the directory: $notUsedSavesDirectory
 echo //////////////////////////////////////////////////'\n'
-rm -rf $notUsedSavesFolder*
+rm -rf $notUsedSavesDirectory/*
 echo Done.
 
 
-# Compressing the whole project folder:
-projectFolder=$(basename -- "$PROJECT_PATH")
+# Compressing the whole project directory:
+projectDirectory=$(basename -- "$PROJECT_PATH")
 echo '\n'//////////////////////////////////////////////////
-echo // Compressing the folder: $projectFolder
+echo // Compressing the directory: $projectDirectory
 echo //////////////////////////////////////////////////'\n'
-tar -czf ../$projectFolder.tgz ../$projectFolder
+tar -czf ../$projectDirectory.tgz ../$projectDirectory
 echo Done.
 
 

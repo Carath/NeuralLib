@@ -68,42 +68,42 @@ Number activation(Activation fun, Number x)
 
 		case Heaviside:
 
-			return x > 0;
+			return x > 0.f;
 			break;
 
 		case Sigmoid:
 
-			return 1. / (1 + number_exp(-x));
+			return 1.f / (1.f + number_exp(-x));
 			break;
 
 		case Tanh:
 
-			return number_tanh(x);
+			return 1.f - 2.f / (1.f + expf(2.f * x)); // way faster than a tanhf() call!
 			break;
 
 		case ReLu:
 
-			return x >= 0 ? x : 0;
+			return x >= 0.f ? x : 0.f;
 			break;
 
 		case LReLu:
 
-			return x >= 0 ? x : LRELU_COEFF * x;
+			return x >= 0.f ? x : LRELU_COEFF * x;
 			break;
 
 		case ELu:
 
-			return x >= 0 ? x : ELU_COEFF * (number_exp(x) - 1);
+			return x >= 0.f ? x : ELU_COEFF * (number_exp(x) - 1.f);
 			break;
 
 		case SELu:
 
-			return x >= 0 ? SELU_COEFF_POS * x : SELU_COEFF_NEG * (number_exp(x) - 1);
+			return x >= 0.f ? SELU_COEFF_POS * x : SELU_COEFF_NEG * (number_exp(x) - 1.f);
 			break;
 
 		default:
 
-			return 0;
+			return 0.f;
 			break;
 	}
 }
@@ -116,49 +116,49 @@ Number der_activation(Activation fun, Number x)
 	{
 		case Id:
 
-			return 1;
+			return 1.f;
 			break;
 
 		case Heaviside:
 
-			return 1; // Won't do anything with 0.
+			return 1.f; // Won't do anything with 0.
 			break;
 
 		case Sigmoid:
 
 			;Number y = activation(Sigmoid, x);
-			return y * (1 - y);
+			return y * (1.f - y);
 			break;
 
 		case Tanh:
 
-			;Number z = number_tanh(x);
-			return 1 - z * z;
+			;Number z = activation(Sigmoid, x);
+			return 1.f - z * z;
 			break;
 
 		case ReLu:
 
-			return x >= 0 ? 1 : 0;
+			return x >= 0.f ? 1.f : 0.f;
 			break;
 
 		case LReLu:
 
-			return x >= 0 ? 1 : LRELU_COEFF;
+			return x >= 0.f ? 1.f : LRELU_COEFF;
 			break;
 
 		case ELu:
 
-			return x >= 0 ? 1 : ELU_COEFF * number_exp(x);
+			return x >= 0.f ? 1.f : ELU_COEFF * number_exp(x);
 			break;
 
 		case SELu:
 
-			return x >= 0 ? SELU_COEFF_POS : SELU_COEFF_NEG * number_exp(x);
+			return x >= 0.f ? SELU_COEFF_POS : SELU_COEFF_NEG * number_exp(x);
 			break;
 
 		default:
 
-			return 1;
+			return 1.f;
 			break;
 	}
 }
@@ -166,7 +166,7 @@ Number der_activation(Activation fun, Number x)
 
 void softmax(Number *dest, const Number *src, int len)
 {
-	Number sum = 0;
+	Number sum = 0.f;
 
 	for (int i = 0; i < len; ++i)
 	{
@@ -184,7 +184,7 @@ void softmax(Number *dest, const Number *src, int len)
 // Updating the last layer's GradSum for the softmax activation with quadratic loss:
 void updateGradSumSoftmaxQuadLoss(Number *GradSum, const Number *answer, const Number *good_answer, int len)
 {
-	Number sum = 0;
+	Number sum = 0.f;
 
 	for (int i = 0; i < len; ++i)
 		sum += answer[i] * (answer[i] - good_answer[i]);

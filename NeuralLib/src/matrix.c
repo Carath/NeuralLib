@@ -129,52 +129,62 @@ inline void copyMatrix(Number **dest, Number* const* src, int rows, int cols)
 // Randomly fill vectors/matrices:
 
 
-void randomFillVector_uniform(Number *vector, int len, Number bound)
+void randomFillVector_uniform(void *rng, Number *vector, int len, Number bound)
 {
 	if (vector == NULL)
 		return;
 
 	for (int i = 0; i < len; ++i)
-		vector[i] = uniform_random(-bound, bound);
+	{
+		vector[i] = uniform_random(rng, -bound, bound);
+	}
 }
 
 
-void randomFillMatrix_uniform(Number **matrix, int rows, int cols, Number bound)
+void randomFillMatrix_uniform(void *rng, Number **matrix, int rows, int cols, Number bound)
 {
 	if (matrix == NULL)
 		return;
 
 	for (int i = 0; i < rows; ++i)
-		randomFillVector_uniform(matrix[i], cols, bound);
+	{
+		randomFillVector_uniform(rng, matrix[i], cols, bound);
+	}
 }
 
 
-void randomFillVector_gaussian(Number *vector, int len, Number std_dev)
+void randomFillVector_gaussian(void *rng, Number *vector, int len, Number std_dev)
 {
 	if (vector == NULL)
 		return;
 
 	for (int i = 0; i < len - 1; i += 2)
-		gaussian_random(vector + i, vector + i + 1, 0, std_dev);
+	{
+		gaussian_random(rng, vector + i, vector + i + 1, 0, std_dev);
+	}
 
 	if (len % 2 == 0)
-		gaussian_random(vector + len - 2, vector + len - 1, 0, std_dev);
+	{
+		gaussian_random(rng, vector + len - 2, vector + len - 1, 0, std_dev);
+	}
 
 	else
 	{
 		Number buffer;
-		gaussian_random(vector + len - 1, &buffer, 0, std_dev); // 'buffer' needed.
+		gaussian_random(rng, vector + len - 1, &buffer, 0, std_dev); // 'buffer' needed.
 	}
 }
 
 
-void randomFillMatrix_gaussian(Number **matrix, int rows, int cols, Number std_dev)
+void randomFillMatrix_gaussian(void *rng, Number **matrix, int rows, int cols, Number std_dev)
 {
 	if (matrix == NULL)
 		return;
 
 	for (int i = 0; i < rows; ++i)
-		randomFillVector_gaussian(matrix[i], cols, std_dev);
+	{
+		randomFillVector_gaussian(rng, matrix[i], cols, std_dev);
+	}
 }
 
 

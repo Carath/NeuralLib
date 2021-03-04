@@ -1,15 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h> // for srand().
 
-#include "settings.h"
 #include "testing.h"
 
 
 int main(void)
 {
-	srand(time(NULL)); // Initialization of the pseudo-random number generator.
-
 	// Normalization of some inputs:
 	// test_normalize();
 

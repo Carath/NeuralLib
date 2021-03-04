@@ -26,10 +26,10 @@ void freeInputs(Inputs **inputs);
 void printInputs(const Inputs *inputs, PrintOption opt);
 
 
-int saveInputs(const Inputs *inputs, const char *foldername);
+int saveInputs(const Inputs *inputs, const char *directoryName);
 
 
-Inputs* loadInputs(const char *foldername);
+Inputs* loadInputs(const char *directoryName);
 
 
 // Finds the mean and standard deviation vectors of the given inputs, stored in a 2 x QuestionsSize matrix.

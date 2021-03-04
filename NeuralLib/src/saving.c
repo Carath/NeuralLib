@@ -23,34 +23,34 @@ void exitFileError(FILE *file, const char *error_message, const char *filename)
 }
 
 
-// Creating a folder:
-void createFolder(const char *foldername)
+// Creating a directory:
+void createDirectory(const char *directoryName)
 {
-	if (foldername == NULL)
+	if (directoryName == NULL)
 	{
-		printf("\nNULL foldername.\n\n");
+		printf("\nNULL directory name.\n\n");
 		return;
 	}
 
 	struct stat st = {0};
 
 	// Check if directory already exists:
-	if (stat(foldername, &st) == -1)
+	if (stat(directoryName, &st) == -1)
 	{
-		if (mkdir(foldername, 0700) == 0)
-			printf("\nFolder '%s' has been created.\n\n", foldername);
+		if (mkdir(directoryName, 0700) == 0)
+			printf("\nDirectory '%s' has been created.\n\n", directoryName);
 		else
-			printf("\nUnable to create the folder '%s'.\n\n", foldername);
+			printf("\nUnable to create the directory '%s'.\n\n", directoryName);
 	}
 	else
 	{
-		// printf("\nFolder '%s' already exists.\n\n", foldername);
+		// printf("\nDirectory '%s' already exists.\n\n", directoryName);
 	}
 }
 
 
 // Moves a file (and eventually renames it) to another location.
-// Returns 1 on success, 0 else (may happen if 'dest_path' contains non-existent folders).
+// Returns 1 on success, 0 else (may happen if 'dest_path' contains non-existent directories).
 int moveFile(const char *dest_path, const char *src_path)
 {
 	if (rename(src_path, dest_path) == 0)

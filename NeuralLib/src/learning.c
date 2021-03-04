@@ -6,7 +6,7 @@
 #include "matrix.h"
 #include "activation.h"
 #include "random.h"
-#include "benchmarking.h"
+#include "get_time.h"
 #include "high_perf.h"
 
 
@@ -160,6 +160,10 @@ void learn(NeuralNetwork *network, Inputs *inputs, LearningParameters *params)
 
 	if (network -> HasLearned == 0) // First learning.
 	{
+		rng32 rng;
+		uint64_t seed = create_seed(NULL);
+		rng32_init(&rng, seed, 0);
+
 		layer = network -> Layers;
 
 		for (int l = 0; l < network -> LayersNumber; ++l)
@@ -169,10 +173,10 @@ void learn(NeuralNetwork *network, Inputs *inputs, LearningParameters *params)
 			Number range;
 
 			if (params -> Init == AUTOMATIC_STD)
-				range = number_sqrt(1. / layer -> InputSize);
+				range = number_sqrt(1.f / layer -> InputSize);
 
 			else if (params -> Init == AUTOMATIC_NORMALIZED)
-				range = number_sqrt(6. / (layer -> InputSize + layer -> NeuronsNumber));
+				range = number_sqrt(6.f / (layer -> InputSize + layer -> NeuronsNumber));
 
 			else // BY_RANGE
 				range = params -> InitRange;
@@ -180,10 +184,10 @@ void learn(NeuralNetwork *network, Inputs *inputs, LearningParameters *params)
 			// Initializing each Net randomly (N.B: biases can be set to 0, it doesn't really matter):
 
 			if (params -> Random == UNIFORM)
-				randomFillVector_uniform(layer -> Net, (layer -> InputSize + 1) * layer -> NeuronsNumber, range);
+				randomFillVector_uniform(&rng, layer -> Net, (layer -> InputSize + 1) * layer -> NeuronsNumber, range);
 
 			else // GAUSSIAN
-				randomFillVector_gaussian(layer -> Net, (layer -> InputSize + 1) * layer -> NeuronsNumber, range);
+				randomFillVector_gaussian(&rng, layer -> Net, (layer -> InputSize + 1) * layer -> NeuronsNumber, range);
 
 			++layer;
 		}
@@ -271,12 +275,12 @@ static void recognitionFramework(NeuralNetwork *network, Inputs *inputs, RecogTy
 	int batch_size_bound = MIN(network -> MaxBatchSize, inputs -> InputNumber); // for maximum speed!
 	int remainder = (inputs -> InputNumber) % batch_size_bound;
 	int current_batch_size = remainder == 0 ? batch_size_bound : remainder;
-	int batch_index = 0, sum = 0;
+	int intput_index = 0, sum = 0;
 
-	while (batch_index < inputs -> InputNumber)
+	while (intput_index < inputs -> InputNumber)
 	{
-		Number **batch_questions = inputs -> Questions + batch_index;
-		Number **batch_goodOrToFill_answers = inputs -> Answers + batch_index;
+		Number **batch_questions = inputs -> Questions + intput_index;
+		Number **batch_goodOrToFill_answers = inputs -> Answers + intput_index;
 
 		Number *batch_answers = propagation(network, batch_questions, current_batch_size);
 
@@ -286,14 +290,13 @@ static void recognitionFramework(NeuralNetwork *network, Inputs *inputs, RecogTy
 				inputs -> AnswersSize, recog, type);
 		}
 
-		batch_index += current_batch_size;
+		intput_index += current_batch_size;
 		current_batch_size = batch_size_bound; // only 'batch_size_bound' after the first pass.
 	}
 
 	if (type == VALIDATION)
 	{
 		float validation_level = 100. * sum / inputs -> InputNumber;
-
 		printf("\n-> Recognition level: %.2f %%\n\n", validation_level);
 	}
 
@@ -345,7 +348,9 @@ static Number* propagation(NeuralNetwork *network, Number **batch_questions, int
 	// Copying the questions from the batch to the first network's Input:
 
 	for (int b = 0; b < batch_size; ++b)
+	{
 		copy(layer -> Input + b * (layer -> InputSize + 1), batch_questions[b], layer -> InputSize);
+	}
 
 	// Propagating the questions through each layers:
 
@@ -364,11 +369,15 @@ static Number* propagation(NeuralNetwork *network, Number **batch_questions, int
 			int output_pos = gradsum_pos + b; // = b * (layer -> NeuronsNumber + 1)
 
 			if (layer -> Fun == Softmax)
+			{
 				softmax(layer -> Output + output_pos, layer -> Sum + gradsum_pos, layer -> NeuronsNumber);
+			}
 			else
 			{
 				for (int j = 0; j < layer -> NeuronsNumber; ++j)
+				{
 					layer -> Output[output_pos + j] = activation(layer -> Fun, layer -> Sum[gradsum_pos + j]);
+				}
 			}
 		}
 
@@ -397,13 +406,17 @@ static void backpropagation(NeuralNetwork *network, Number **batch_good_answers,
 		if (params -> LossFun == QUADRATIC)
 		{
 			if (layer -> Fun == Softmax)
+			{
 				updateGradSumSoftmaxQuadLoss(layer -> GradSum + gradsum_pos, layer -> Output + output_pos,
 					batch_good_answers[b], layer -> NeuronsNumber);
+			}
 			else
 			{
 				for (int j = 0; j < layer -> NeuronsNumber; ++j)
-					layer -> GradSum[gradsum_pos + j] = der_activation(layer -> Fun, layer -> Sum[output_pos + j]) *
+				{
+					layer -> GradSum[gradsum_pos + j] = der_activation(layer -> Fun, layer -> Sum[gradsum_pos + j]) *
 						(layer -> Output[output_pos + j] - batch_good_answers[b][j]);
+				}
 			}
 		}
 
@@ -433,7 +446,9 @@ static void backpropagation(NeuralNetwork *network, Number **batch_good_answers,
 			int gradsum_pos = b * layer -> NeuronsNumber;
 
 			for (int j = 0; j < layer -> NeuronsNumber; ++j)
+			{
 				layer -> GradSum[gradsum_pos + j] *= der_activation(layer -> Fun, layer -> Sum[gradsum_pos + j]);
+			}
 		}
 	}
 }
@@ -507,20 +522,22 @@ static void gradientDescent(NeuralNetwork *network, Inputs *inputs, LearningPara
 
 		int current_remainder = (inputs -> InputNumber) % (params -> BatchSize); // here since BatchSize may be changed with epochs.
 		int current_batch_size = current_remainder == 0 ? params -> BatchSize : current_remainder;
-		int batch_index = 0, sum = 0;
+		int intput_index = 0, sum = 0;
 
-		while (batch_index < inputs -> InputNumber)
+		while (intput_index < inputs -> InputNumber)
 		{
-			Number **batch_questions = inputs -> Questions + batch_index;
-			Number **batch_good_answers = inputs -> Answers + batch_index;
+			Number **batch_questions = inputs -> Questions + intput_index;
+			Number **batch_good_answers = inputs -> Answers + intput_index;
 
 			Number *batch_answers = propagation(network, batch_questions, current_batch_size);
 
 			if (params -> PrintEstimates)
 			{
 				for (int b = 0; b < current_batch_size; ++b)
+				{
 					sum += recog_method(batch_good_answers[b], batch_answers + b * (inputs -> AnswersSize + 1),
 						inputs -> AnswersSize, params -> RecogEstimates, VALIDATION);
+				}
 			}
 
 			backpropagation(network, batch_good_answers, params, current_batch_size);
@@ -531,14 +548,13 @@ static void gradientDescent(NeuralNetwork *network, Inputs *inputs, LearningPara
 
 			updateNetwork(network, grad_buffer, M_buffer, V_buffer, params, step_number);
 
-			batch_index += current_batch_size;
+			intput_index += current_batch_size;
 			current_batch_size = params -> BatchSize; // only 'params -> BatchSize' after the first pass.
 		}
 
 		if (params -> PrintEstimates)
 		{
 			float learning_level = 100. * sum / inputs -> InputNumber;
-
 			printf("\nEpoch °%d, learning level estimate: %.2f %%\n", epoch + 1, learning_level);
 		}
 
@@ -546,7 +562,8 @@ static void gradientDescent(NeuralNetwork *network, Inputs *inputs, LearningPara
 		params -> LearningRate *= params -> LearningRateMultiplier;
 
 		// Multiply the batch size by the given value:
-		params -> BatchSize = MIN(params -> BatchSize * params -> BatchSizeMultiplier, batch_size_bound);
+		int desired_batch_size = (int) (params -> BatchSize * params -> BatchSizeMultiplier);
+		params -> BatchSize = MIN(desired_batch_size, batch_size_bound);
 		params -> BatchSize = MAX(params -> BatchSize, 1); // so that batch size != 0.
 	}
 
@@ -569,7 +586,7 @@ static void updateNetwork(NeuralNetwork *network, Number **grad_buffer, Number *
 		{
 			int weigthsLength = layer -> InputSize * layer -> NeuronsNumber;
 
-			scal(layer -> Net, weigthsLength, 1 - params -> L2regCoeff);
+			scal(layer -> Net, weigthsLength, 1.f - params -> L2regCoeff);
 		}
 
 
@@ -598,14 +615,14 @@ static void updateNetwork(NeuralNetwork *network, Number **grad_buffer, Number *
 
 				// layer -> Net -= M_buffer[l]:
 
-				addScal(layer -> Net, M_buffer[l], netLength, -1.);
+				addScal(layer -> Net, M_buffer[l], netLength, -1.f);
 
 				break;
 
 
 			case RMSprop:
 
-				;Number RMScoeff_conj = 1 - params -> RMScoeff;
+				;Number RMScoeff_conj = 1.f - params -> RMScoeff;
 
 				// V_buffer[l] = params -> RMScoeff * V_buffer[l] + RMScoeff_conj * grad_buffer[l] * grad_buffer[l]
 				// layer -> Net -= params -> LearningRate * grad_buffer[l] / (number_sqrt(V_buffer[l]) + EPSILON)
@@ -624,10 +641,10 @@ static void updateNetwork(NeuralNetwork *network, Number **grad_buffer, Number *
 
 			case ADAM:
 
-				;Number AdamBetaM_conj = 1 - params -> AdamBetaM, AdamBetaV_conj = 1 - params -> AdamBetaV;
+				;Number AdamBetaM_conj = 1.f - params -> AdamBetaM, AdamBetaV_conj = 1.f - params -> AdamBetaV;
 
-				Number scalar = params -> LearningRate * number_sqrt(1 - number_pow(params -> AdamBetaV, step_number)) /
-					(1 - number_pow(params -> AdamBetaM, step_number));
+				Number scalar = params -> LearningRate * number_sqrt(1.f - number_pow(params -> AdamBetaV, step_number)) /
+					(1.f - number_pow(params -> AdamBetaM, step_number));
 
 				// M_buffer[l] = params -> AdamBetaM * M_buffer[l] + AdamBetaM_conj * grad_buffer[l]
 				// V_buffer[l] = params -> AdamBetaM * V_buffer[l] + AdamBetaM_conj * grad_buffer[l] * grad_buffer[l]

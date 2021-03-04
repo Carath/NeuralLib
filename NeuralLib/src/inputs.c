@@ -6,6 +6,8 @@
 #include "inputs.h"
 #include "matrix.h"
 #include "saving.h"
+#include "rng32.h"
+#include "get_time.h"
 
 
 Inputs* createInputs(int InputNumber, int QuestionsSize, int AnswersSize, Number** Questions, Number** Answers)
@@ -62,7 +64,7 @@ void printInputs(const Inputs *inputs, PrintOption opt)
 }
 
 
-int saveInputs(const Inputs *inputs, const char *foldername)
+int saveInputs(const Inputs *inputs, const char *directoryName)
 {
 	if (inputs == NULL || inputs -> InputNumber == 0 || inputs -> Questions == NULL)
 	{
@@ -70,20 +72,20 @@ int saveInputs(const Inputs *inputs, const char *foldername)
 		return 0;
 	}
 
-	if (foldername == NULL)
+	if (directoryName == NULL)
 	{
-		printf("\nNULL foldername.\n\n");
+		printf("\nNULL directoryName.\n\n");
 		return 0;
 	}
 
-	// Creating a folder in which the inputs will be saved:
+	// Creating a directory in which the inputs will be saved:
 
-	createFolder(foldername);
+	createDirectory(directoryName);
 
 	// Creating a text file with the inputs' readable data:
 
 	char infos_filename[MAX_PATH_LENGTH];
-	sprintf(infos_filename, "%s/infos.txt", foldername);
+	sprintf(infos_filename, "%s/infos.txt", directoryName);
 
 	FILE *infos_file = fopen(infos_filename, "w");
 
@@ -98,7 +100,7 @@ int saveInputs(const Inputs *inputs, const char *foldername)
 	// Saving those inputs' questions:
 
 	char questions_filename[MAX_PATH_LENGTH];
-	sprintf(questions_filename, "%s/questions.bin", foldername);
+	sprintf(questions_filename, "%s/questions.bin", directoryName);
 
 	save_matrix(inputs -> Questions, inputs -> InputNumber, inputs -> QuestionsSize, questions_filename);
 
@@ -107,29 +109,29 @@ int saveInputs(const Inputs *inputs, const char *foldername)
 		// Saving those inputs' answers:
 
 		char answers_filename[MAX_PATH_LENGTH];
-		sprintf(answers_filename, "%s/answers.bin", foldername);
+		sprintf(answers_filename, "%s/answers.bin", directoryName);
 
 		save_matrix(inputs -> Answers, inputs -> InputNumber, inputs -> AnswersSize, answers_filename);
 	}
 
-	printf("\nThe given inputs have been successfully saved to '%s'.\n\n", foldername);
+	printf("\nThe given inputs have been successfully saved to '%s'.\n\n", directoryName);
 
 	return 1;
 }
 
 
-Inputs* loadInputs(const char *foldername)
+Inputs* loadInputs(const char *directoryName)
 {
-	if (foldername == NULL)
+	if (directoryName == NULL)
 	{
-		printf("\nNULL foldername.\n\n");
+		printf("\nNULL directoryName.\n\n");
 		exit(EXIT_FAILURE);
 	}
 
 	char infos_filename[MAX_PATH_LENGTH];
 	char error_message[MAX_PATH_LENGTH];
 
-	sprintf(infos_filename, "%s/infos.txt", foldername);
+	sprintf(infos_filename, "%s/infos.txt", directoryName);
 
 	// Reading the text file with the inputs' readable data:
 
@@ -172,7 +174,7 @@ Inputs* loadInputs(const char *foldername)
 	// Loading those inputs' questions:
 
 	char questions_filename[MAX_PATH_LENGTH];
-	sprintf(questions_filename, "%s/questions.bin", foldername);
+	sprintf(questions_filename, "%s/questions.bin", directoryName);
 
 	load_toMatrix(inputs -> Questions, input_number, questions_size, questions_filename);
 
@@ -181,14 +183,14 @@ Inputs* loadInputs(const char *foldername)
 		// Loading those inputs' answers:
 
 		char answers_filename[MAX_PATH_LENGTH];
-		sprintf(answers_filename, "%s/answers.bin", foldername);
+		sprintf(answers_filename, "%s/answers.bin", directoryName);
 
 		inputs -> Answers = createMatrix(input_number, answers_size);
 
 		load_toMatrix(inputs -> Answers, input_number, answers_size, answers_filename);
 	}
 
-	printf("\nThe given inputs have been successfully loaded from '%s'.\n\n", foldername);
+	printf("\nThe given inputs have been successfully loaded from '%s'.\n\n", directoryName);
 
 	return inputs;
 }
@@ -257,7 +259,7 @@ void normalize(Inputs *inputs, Number* const* mean_stddev_matrix)
 	for (int i = 0; i < inputs -> InputNumber; ++i)
 	{
 		for (int j = 0; j < inputs -> QuestionsSize; ++j)
-			questions[i][j] = (questions[i][j] - mean_vector[j]) / std_dev_vector[j];
+			questions[i][j] = (questions[i][j] - mean_vector[j]) / std_dev_vector[j]; // std_dev_vector[j] > 0.
 	}
 }
 
@@ -271,28 +273,31 @@ void shuffleInputs(Inputs *inputs)
 		return;
 	}
 
+	rng32 rng;
+	uint64_t seed = create_seed(NULL);
+	rng32_init(&rng, seed, 0);
+
 	int len = inputs -> InputNumber;
 
 	Number **Questions = inputs -> Questions;
 	Number **Answers = inputs -> Answers;
 	Number *temp;
 
-	if (len - 1 > RAND_MAX)
-		printf("\nNumber of inputs is greater than RAND_MAX!\n\n");
+	// In case RNG32_MAX is small, for some (terrible) RNG...
+	if (len >= RNG32_MAX)
+		printf("\nNumber of inputs (%d) is greater or equal to RNG32_MAX!\n\n", len);
 
 	// N.B: questions and answers receive the same shuffling!
 
-	for (int i = len - 1; i >= 1; --i)
+	for (unsigned int i = len - 1; i >= 1; --i)
 	{
-		int j = rand() % (i + 1); // 0 ≤ j ≤ i. Biased, but negligeable.
+		unsigned int j = rng32_nextInt(&rng) % (i + 1); // 0 ≤ j ≤ i. Biased, but negligeable.
 
 		temp = Questions[i];
-
 		Questions[i] = Questions[j];
 		Questions[j] = temp;
 
 		temp = Answers[i];
-
 		Answers[i] = Answers[j];
 		Answers[j] = temp;
 	}

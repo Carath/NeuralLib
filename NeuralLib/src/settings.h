@@ -35,13 +35,6 @@ typedef enum {INFOS, ALL} PrintOption;
 #endif
 
 
-// Used to get the length of an array on the stack, in the same context it is defined.
-// Do _not_ use this on an array allocated in the heap, or on an array passed as parameter of a function.
-#ifndef ARRAY_LENGTH
-#define ARRAY_LENGTH(array) \
-	(sizeof(array) / sizeof(*(array)))
-#endif
-
 #ifndef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
@@ -50,9 +43,23 @@ typedef enum {INFOS, ALL} PrintOption;
 #define MAX(x, y) ((x) < (y) ? (y) : (x))
 #endif
 
+
+// Used to get the length of an array on the stack, in the same context it is defined.
+// Do _not_ use this on an array allocated in the heap, or on an array passed as parameter of a function.
+#ifndef ARRAY_LENGTH
+#define ARRAY_LENGTH(array) \
+	(sizeof(array) / sizeof(*(array)))
+#endif
+
+
+// Used in expanding TO_STRING():
+#ifndef _TO_STRING
+#define _TO_STRING(STRING) #STRING
+#endif
+
 // Returns the arg name as a string:
 #ifndef TO_STRING
-#define TO_STRING(STRING) #STRING
+#define TO_STRING(STRING) _TO_STRING(STRING)
 #endif
 
 
@@ -69,6 +76,12 @@ typedef enum {INFOS, ALL} PrintOption;
 	}																								\
 	(int) ARRAY_LENGTH(array_1);																	\
 })
+#endif
+
+
+#ifndef PRINT_FILE_LOCATION
+#define PRINT_FILE_LOCATION() \
+	printf("-> In function '%s', from file '%s', line %d.\n", __func__, __FILE__, __LINE__)
 #endif
 
 

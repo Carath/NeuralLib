@@ -166,7 +166,7 @@ void printNetwork(const NeuralNetwork *network, PrintOption opt)
 
 
 // Saving a neural network. N.B: MaxBatchSize doesn't need to be saved, for its value is arbitrary:
-int saveNetwork(const NeuralNetwork *network, const char *foldername)
+int saveNetwork(const NeuralNetwork *network, const char *directoryName)
 {
 	if (network == NULL)
 	{
@@ -174,9 +174,9 @@ int saveNetwork(const NeuralNetwork *network, const char *foldername)
 		return 0;
 	}
 
-	if (foldername == NULL)
+	if (directoryName == NULL)
 	{
-		printf("\nNULL foldername.\n\n");
+		printf("\nNULL directoryName.\n\n");
 		return 0;
 	}
 
@@ -186,14 +186,14 @@ int saveNetwork(const NeuralNetwork *network, const char *foldername)
 		return 0;
 	}
 
-	// Creating a folder in which the network will be saved:
+	// Creating a directory in which the network will be saved:
 
-	createFolder(foldername);
+	createDirectory(directoryName);
 
 	// Creating a text file with the network's readable data:
 
 	char infos_filename[MAX_PATH_LENGTH];
-	sprintf(infos_filename, "%s/infos.txt", foldername);
+	sprintf(infos_filename, "%s/infos.txt", directoryName);
 
 	FILE *infos_file = fopen(infos_filename, "w");
 
@@ -218,7 +218,7 @@ int saveNetwork(const NeuralNetwork *network, const char *foldername)
 
 		// Saving the net of this layer:
 
-		sprintf(net_filename, "%s/net_%d.bin", foldername, l);
+		sprintf(net_filename, "%s/net_%d.bin", directoryName, l);
 
 		save_flat_matrix(layer -> Net, layer -> InputSize + 1, layer -> NeuronsNumber, net_filename);
 
@@ -227,24 +227,24 @@ int saveNetwork(const NeuralNetwork *network, const char *foldername)
 
 	fclose(infos_file);
 
-	printf("\nThe given neural network has been successfully saved in '%s'.\n\n", foldername);
+	printf("\nThe given neural network has been successfully saved in '%s'.\n\n", directoryName);
 
 	return 1;
 }
 
 
-NeuralNetwork* loadNetwork(const char *foldername, int MaxBatchSize)
+NeuralNetwork* loadNetwork(const char *directoryName, int MaxBatchSize)
 {
-	if (foldername == NULL)
+	if (directoryName == NULL)
 	{
-		printf("\nNULL foldername.\n\n");
+		printf("\nNULL directoryName.\n\n");
 		exit(EXIT_FAILURE);
 	}
 
 	char infos_filename[MAX_PATH_LENGTH];
 	char error_message[MAX_PATH_LENGTH];
 
-	sprintf(infos_filename, "%s/infos.txt", foldername);
+	sprintf(infos_filename, "%s/infos.txt", directoryName);
 
 	// Reading the text file with the network's readable data:
 
@@ -328,14 +328,14 @@ NeuralNetwork* loadNetwork(const char *foldername, int MaxBatchSize)
 
 	for (int l = 0; l < layers_number; ++l)
 	{
-		sprintf(net_filename, "%s/net_%d.bin", foldername, l);
+		sprintf(net_filename, "%s/net_%d.bin", directoryName, l);
 
 		load_toFlatMatrix(layer -> Net, layer -> InputSize + 1, layer -> NeuronsNumber, net_filename);
 
 		++layer;
 	}
 
-	printf("\nThe given neural network has been successfully loaded from '%s'.\n\n", foldername);
+	printf("\nThe given neural network has been successfully loaded from '%s'.\n\n", directoryName);
 
 	return network;
 }

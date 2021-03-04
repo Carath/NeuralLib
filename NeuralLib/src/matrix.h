@@ -39,13 +39,13 @@ void copyMatrix(Number **dest, Number* const* src, int rows, int cols);
 
 // Randomly fill vectors/matrices:
 
-void randomFillVector_uniform(Number *vector, int len, Number bound);
+void randomFillVector_uniform(void *rng, Number *vector, int len, Number bound);
 
-void randomFillMatrix_uniform(Number **matrix, int rows, int cols, Number bound);
+void randomFillMatrix_uniform(void *rng, Number **matrix, int rows, int cols, Number bound);
 
-void randomFillVector_gaussian(Number *vector, int len, Number std_dev);
+void randomFillVector_gaussian(void *rng, Number *vector, int len, Number std_dev);
 
-void randomFillMatrix_gaussian(Number **matrix, int rows, int cols, Number std_dev);
+void randomFillMatrix_gaussian(void *rng, Number **matrix, int rows, int cols, Number std_dev);
 
 
 // Computational part:

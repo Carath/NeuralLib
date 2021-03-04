@@ -1,11 +1,17 @@
 //////////////////////////////////////////////////////////
-// NeuralLib v1.3
-//////////////////////////////////////////////////////////
-
-// This file contains the public definitions and functions from the 'NeuralLib' library.
+// This file contains the public definitions and
+// functions from the 'NeuralLib' library.
 
 #ifndef NEURAL_LIB_H
 #define NEURAL_LIB_H
+
+#define NEURAL_LIB_VERSION 1.4
+
+#if __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
 
 //////////////////////////////////////////////////////////
 // settings.h
@@ -23,13 +29,6 @@ typedef enum {INFOS, ALL} PrintOption;
 #endif
 
 
-// Used to get the length of an array on the stack, in the same context it is defined.
-// Do _not_ use this on an array allocated in the heap, or on an array passed as parameter of a function.
-#ifndef ARRAY_LENGTH
-#define ARRAY_LENGTH(array) \
-	(sizeof(array) / sizeof(*(array)))
-#endif
-
 #ifndef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
@@ -38,9 +37,23 @@ typedef enum {INFOS, ALL} PrintOption;
 #define MAX(x, y) ((x) < (y) ? (y) : (x))
 #endif
 
+
+// Used to get the length of an array on the stack, in the same context it is defined.
+// Do _not_ use this on an array allocated in the heap, or on an array passed as parameter of a function.
+#ifndef ARRAY_LENGTH
+#define ARRAY_LENGTH(array) \
+	(sizeof(array) / sizeof(*(array)))
+#endif
+
+
+// Used in expanding TO_STRING():
+#ifndef _TO_STRING
+#define _TO_STRING(STRING) #STRING
+#endif
+
 // Returns the arg name as a string:
 #ifndef TO_STRING
-#define TO_STRING(STRING) #STRING
+#define TO_STRING(STRING) _TO_STRING(STRING)
 #endif
 
 
@@ -57,6 +70,12 @@ typedef enum {INFOS, ALL} PrintOption;
 	}																								\
 	(int) ARRAY_LENGTH(array_1);																	\
 })
+#endif
+
+
+#ifndef PRINT_FILE_LOCATION
+#define PRINT_FILE_LOCATION() \
+	printf("-> In function '%s', from file '%s', line %d.\n", __func__, __FILE__, __LINE__)
 #endif
 
 
@@ -111,10 +130,10 @@ void freeInputs(Inputs **inputs);
 void printInputs(const Inputs *inputs, PrintOption opt);
 
 
-int saveInputs(const Inputs *inputs, const char *foldername);
+int saveInputs(const Inputs *inputs, const char *directoryName);
 
 
-Inputs* loadInputs(const char *foldername);
+Inputs* loadInputs(const char *directoryName);
 
 
 // Finds the mean and standard deviation vectors of the given inputs, stored in a 2 x QuestionsSize matrix.
@@ -177,11 +196,11 @@ void printNetwork(const NeuralNetwork *network, PrintOption opt);
 
 
 // Saving a neural network. N.B: MaxBatchSize doesn't need to be saved, for its value is arbitrary:
-int saveNetwork(const NeuralNetwork *network, const char *foldername);
+int saveNetwork(const NeuralNetwork *network, const char *directoryName);
 
 
 // Loading a neural network:
-NeuralNetwork* loadNetwork(const char *foldername, int MaxBatchSize);
+NeuralNetwork* loadNetwork(const char *directoryName, int MaxBatchSize);
 
 
 //////////////////////////////////////////////////////////
@@ -309,12 +328,12 @@ void copyMatrix(Number **dest, Number* const* src, int rows, int cols);
 //////////////////////////////////////////////////////////
 
 
-// Creating a folder:
-void createFolder(const char *foldername);
+// Creating a directory:
+void createDirectory(const char *directoryName);
 
 
 // Moves a file (and eventually renames it) to another location.
-// Returns 1 on success, 0 else (may happen if 'dest_path' contains non-existent folders).
+// Returns 1 on success, 0 else (may happen if 'dest_path' contains non-existent directories).
 int moveFile(const char *dest_path, const char *src_path);
 
 
@@ -360,24 +379,6 @@ void recenter(Number *dest, const Number *src, int width, int height);
 
 
 //////////////////////////////////////////////////////////
-// random.h
-//////////////////////////////////////////////////////////
-
-
-// Returns a random number in [min, max[.
-Number uniform_random(Number min, Number max);
-
-
-//////////////////////////////////////////////////////////
-// benchmarking
-//////////////////////////////////////////////////////////
-
-
-// Used to measure elapsed time. Thread safe.
-double get_time(void);
-
-
-//////////////////////////////////////////////////////////
 // endian.h
 //////////////////////////////////////////////////////////
 
@@ -393,5 +394,23 @@ void swap_matrix_float(float **matrix, int rows, int cols);
 // Swap the bytes order of every double in the given matrix:
 void swap_matrix_double(double **matrix, int rows, int cols);
 
+
+//////////////////////////////////////////////////////////
+// get_time.h
+//////////////////////////////////////////////////////////
+
+
+// Used to measure elapsed time. Thread safe.
+double get_time(void);
+
+
+// Used to create RNG different seeds per nanosecond. A pointer to a memory block can
+// also be given to yield a unique seed per process, however it can be left to NULL.
+uint64_t create_seed(void *address);
+
+
+#if __cplusplus
+}
+#endif
 
 #endif

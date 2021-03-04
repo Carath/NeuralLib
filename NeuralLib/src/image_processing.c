@@ -29,7 +29,7 @@ void printGrayscaleImage(const Number *image, int width, int height)
 }
 
 
-inline static Number maxMatrix_case(const Number *image, int image_width,
+static inline Number maxMatrix_case(const Number *image, int image_width,
 	int kernel_width, int kernel_height, int row, int col)
 {
 	Number max = -INFINITY;
@@ -48,7 +48,7 @@ inline static Number maxMatrix_case(const Number *image, int image_width,
 }
 
 
-inline static Number averageMatrix_case(const Number *image, int image_width,
+static inline Number averageMatrix_case(const Number *image, int image_width,
 	int kernel_width, int kernel_height, int row, int col)
 {
 	Number sum = 0;

@@ -7,7 +7,7 @@
 #include "MNIST_loading.h"
 
 
-Inputs* MNIST_createInputs(const char *foldername, MNIST_mode mode)
+Inputs* MNIST_createInputs(const char *directoryName, MNIST_mode mode)
 {
 	char images_filename[MAX_PATH_LENGTH];
 	char labels_filename[MAX_PATH_LENGTH];
@@ -15,15 +15,15 @@ Inputs* MNIST_createInputs(const char *foldername, MNIST_mode mode)
 	if (mode == MNIST_TRAINING)
 	{
 		printf("Loading the MNIST training dataset.\n");
-		sprintf(images_filename, "%strain-images-idx3-ubyte", foldername);
-		sprintf(labels_filename, "%strain-labels-idx1-ubyte", foldername);
+		sprintf(images_filename, "%strain-images-idx3-ubyte", directoryName);
+		sprintf(labels_filename, "%strain-labels-idx1-ubyte", directoryName);
 	}
 
 	else // MNIST_VALIDATION
 	{
 		printf("Loading the MNIST validation dataset.\n");
-		sprintf(images_filename, "%st10k-images-idx3-ubyte", foldername);
-		sprintf(labels_filename, "%st10k-labels-idx1-ubyte", foldername);
+		sprintf(images_filename, "%st10k-images-idx3-ubyte", directoryName);
+		sprintf(labels_filename, "%st10k-labels-idx1-ubyte", directoryName);
 	}
 
 	int input_number, image_pixels;
@@ -65,7 +65,7 @@ Number** MNIST_loadImages(const char *filename, int *input_number, int *image_pi
 		return NULL;
 	}
 
-	*input_number = __bswap_32(head[1]); // 10000
+	*input_number = __bswap_32(head[1]); // 60K / 10K
 	int rows = __bswap_32(head[2]); // 28
 	int cols = __bswap_32(head[3]); // 28
 
@@ -120,7 +120,7 @@ Number** MNIST_loadLabels(const char *filename, int input_number) // 'input_numb
 		return NULL;
 	}
 
-	if (input_number != __bswap_32(head[1])) // 10000
+	if (input_number != __bswap_32(head[1])) // 60K / 10K
 	{
 		printf("\nIncompatible input numbers.\n\n");
 		return NULL;

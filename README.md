@@ -3,90 +3,90 @@
 A small deep learning library.
 
 
-LIBRARIES USED, SETTINGS:
--------------------------
+## Installation
 
-Some compilation settings can be changed. In order to do so,
-some lines in the file 'compiler_settings.mk' can be commented/uncommented:
+Only Linux (Ubuntu) is supported at this time.
 
+* Installing the graphical library SDL2, and some FreeType fonts. This is only needed for the MNIST animation:
 
-- High performance library OpenBLAS for fast matrix product on CPUs.
-  Optional, but highly recommended for fast learning. Lines concerned:
+```
+sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libfreetype6-dev
+```
 
-HIGH_PERF_LIB = OPENBLAS
-HIGH_PERF_PATH = /home/username/OpenBlas
+* Installing OpenBLAS, the high performance library for fast matrix products on CPUs. Optional, but highly recommended for fast learning.
 
+Official instructions and precompiled binaries can be found [here.](https://www.openblas.net/) To build from source, just run the script below (note that this step may take some time):
 
-- Graphical library used for drawing and user inputs, SDL2.
-  Only necessary for the MNIST animation.
+```
+install_OpenBLAS.sh
+```
 
-
-INSTALLING (Ubuntu):
---------------------
-
-Only Linux is supported at this time.
+Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncommented in ``` global_settings.mk ```. Futhermore, if OpenBLAS install directory has been changed, edit here the variable ``` HIGH_PERF_PATH ``` accordingly.
 
 
-- Installing OpenBLAS:
-
-Follow the instructions from: https://www.openblas.net/
-
-Building from source may take a while.
-
-
-- Installing SDL2:
-
-sudo apt-get install libsdl2-dev
-sudo apt-get install libsdl2-image-dev
-sudo apt-get install libsdl2-ttf-dev
-
-
-- Installing some FreeType fonts:
-
-sudo apt-get install libfreetype6-dev
-
-
-COMPILING:
-----------
+## Compilation
 
 - For compiling all projects in the right order, type:
 
+```
 sh cleanAndBuild.sh
-
+```
 
 - For building each project separately, do in each folder:
 
+```
 make clean
 make
+```
 
+- For cleaning and compressing the whole project to an archive placed in the same directory than the project is, type:
 
-- For cleaning and compressing the whole project to an archive
-  placed in the same directory than the project is, type:
-
+```
 sh compress.sh
+```
+
+Note that either way may result in an error message in case object files
+are missing. This is totally benign. It may also be useful to emphasize here
+that doing a 'make clean' call can be necessary (before the 'make' one) in case
+only a header file has been modified, in a given project.
 
 
-It is crucial to emphasize here that doing a 'make clean' call can be necessary
-(before the 'make' one), in case only a header file has been modified, or when
-a static library the code depends on have been updated.
+## Runtime:
 
-
-LAUNCHING:
-----------
-
-
-Go to the desired project directory, find the executable name, and type
+Go in the desired project directory, find the executable name, and type
 (by replacing 'executable_name' by the correct one):
 
-./executable_name
+``` ./executable_name ```
 
 
-FOR A WINDOWS PORT:
--------------------
+## For a Windows port
 
 Potential incompatibilities:
 
 - Saved .txt files may have missing carriage returns (\r\n vs \n).
-- functions for creating directories, moving files, etc...
+- create_folder_1(), create_folder_2()
 - getFileSize()
 - byte_swap_... functions
+
+
+## Saved nets
+
+The lib is shipped with pre-trained neural nets for the MNIST database. Note that those nets have been prevented to be indexed by git anymore, using a command such as:
+
+```
+git update-index --skip-worktree MNIST_learning/saves/MNIST_learned/*
+```
+
+To index new instances, use the same command with ``` --no-skip ```
+
+
+## Future improvements
+
+- Produce a share library (.so) along the static one (.a).
+- Use a more generic backprop function.
+- Bring back old 1-input SGD, it may be useful for reinforcement learning.
+- Add an early stopping mechanism, at least using quick estimations.
+- Support printing the loss function dynamically.
+- Support printing a basic confusion matrix. Bonus point: full stats per classes.
+- Update saved nets formats: infos.txt as .json, add endianness check and Number size data in binary files. Bonus point for adding checksums too.
+- Try the OpenCL lib for GPU computations, try CNN and RBM nets, and reinforcement learning. The sky the limit.

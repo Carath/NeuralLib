@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h> // for srand().
 
 #include "MNIST_learning.h"
 
 
-#define MNIST_PATH "../../../../MNIST_samples/"
+// Dataset found at: http://yann.lecun.com/exdb/mnist/
+// Files must be extracted.
+
+// Specify here the path to uncompressed MNIST files:
+#define MNIST_PATH "/home/mypc/Documents/MNIST_samples/"
 
 
 int main(int argc, char **argv)
 {
-	srand(time(NULL)); // Initialization of the pseudo-random number generator.
-
-	// Printing the first 'number_to_print' inputs of the MNIST training dataset:
+	// // Printing the first 'number_to_print' inputs of the MNIST training dataset:
 	// MNIST_print(MNIST_PATH, 100);
 
 

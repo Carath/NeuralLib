@@ -11,50 +11,36 @@ static Inputs* modified_MNIST_inputs(const Inputs *MNIST_inputs)
 {
 	int inputs_number = MNIST_inputs -> InputNumber;
 	int question_size = MNIST_inputs -> QuestionsSize;
-	int new_answer_size = MNIST_inputs -> AnswersSize + 1; // 1 dimension more.
+	int answer_size = MNIST_inputs -> AnswersSize;
 
-	Number **new_Questions = createMatrix(inputs_number, question_size);
-	Number **new_Answers = createMatrix(inputs_number, new_answer_size);
+	// 2 times more inputs, answers have 1 more dimension:
+	Number **new_Questions = createMatrix(2 * inputs_number, question_size);
+	Number **new_Answers = createMatrix(2 * inputs_number, answer_size + 1);
 
-	for (int i = 0; i < inputs_number; ++i)
+	for (int i = 0; i < 2 * inputs_number; i += 2)
 	{
-		int mirroring;
-
-		if (MNIST_inputs -> Answers[i][0] == 1 || MNIST_inputs -> Answers[i][8] == 1) // 0 and 8 are symmetric.
-			mirroring = 0;
-		else
-			mirroring = rand() % 2;
-
 		for (int j = 0; j < question_size; ++j)
 		{
-			if (mirroring) // Mirroring the image:
-			{
-				int row = j / MNIST_IMAGE_WIDTH;
-				int col = j % MNIST_IMAGE_WIDTH;
+			int row = j / MNIST_IMAGE_WIDTH;
+			int col = j % MNIST_IMAGE_HEIGHT;
+			int j_symmetric = row * MNIST_IMAGE_WIDTH + MNIST_IMAGE_WIDTH - 1 - col;
 
-				if (col < MNIST_IMAGE_WIDTH / 2)
-				{
-					int j_symmetric = row * MNIST_IMAGE_WIDTH + MNIST_IMAGE_WIDTH - 1 - col;
-
-					new_Questions[i][j] = MNIST_inputs -> Questions[i][j_symmetric];
-					new_Questions[i][j_symmetric] = MNIST_inputs -> Questions[i][j];
-				}
-			}
-
-			else
-				new_Questions[i][j] = MNIST_inputs -> Questions[i][j];
+			new_Questions[i][j] = MNIST_inputs -> Questions[i / 2][j];
+			new_Questions[i+1][j] = MNIST_inputs -> Questions[i / 2][j_symmetric];
 		}
 
-		for (int j = 0; j < new_answer_size - 1; ++j)
-			new_Answers[i][j] = MNIST_inputs -> Answers[i][j];
+		for (int j = 0; j < answer_size; ++j)
+		{
+			new_Answers[i][j] = MNIST_inputs -> Answers[i / 2][j];
+			new_Answers[i+1][j] = MNIST_inputs -> Answers[i / 2][j];
+		}
 
 		// Last index: mirroring status:
-		new_Answers[i][new_answer_size - 1] = mirroring;
+		new_Answers[i][answer_size] = 0;
+		new_Answers[i+1][answer_size] = 1; // N.B: 0 and 8 are symmetric: too bad.
 	}
 
-	Inputs *new_inputs = createInputs(inputs_number, question_size, new_answer_size, new_Questions, new_Answers);
-
-	return new_inputs;
+	return createInputs(2 * inputs_number, question_size, answer_size + 1, new_Questions, new_Answers);
 }
 
 

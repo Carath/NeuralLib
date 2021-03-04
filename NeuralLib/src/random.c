@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+// #include <stdlib.h>
 #include <math.h>
 
 #include "random.h"
@@ -9,35 +9,34 @@ static const double two_pi = 2.0 * 3.14159265358979323846;
 // static const double sqrt_2 = 1.41421356237309504880;
 
 
-// Returns a random number in [min, max[.
-inline Number uniform_random(Number min, Number max)
+// Returns a random number in [min, max].
+inline Number uniform_random(void *rng, Number min, Number max)
 {
-	return (Number) rand() / RAND_MAX * (max - min) + min;
+	return (max - min) * rng32_nextFloat(rng) + min;
 }
 
 
 // Box–Muller transform, generate two 'Number' following the distribution N(0,1):
-void Box_Muller(Number *x1, Number *x2)
+void Box_Muller(void *rng, Number *x1, Number *x2)
 {
 	double u1;
-	double u2 = (double) rand() / RAND_MAX; // ~ U[0, 1]
+	double u2 = rng32_nextFloat(rng); // ~ U[0, 1]
 
-	do
-		u1 = (double) rand() / RAND_MAX; // ~ U]0, 1], needs to be > 0 !!!
+	do { u1 = rng32_nextFloat(rng); } // ~ U]0, 1], needs to be > 0 !!!
 	while (u1 == 0);
 
 	double rho = sqrt(-2. * log(u1));
 	double theta = two_pi * u2;
 
-	*x1 = (Number) rho * cos(theta);
-	*x2 = (Number) rho * sin(theta);
+	*x1 = (Number) (rho * cos(theta));
+	*x2 = (Number) (rho * sin(theta));
 }
 
 
 // Generate two 'Number' following the distribution N(mean, std_dev²):
-void gaussian_random(Number *x1, Number *x2, Number mean, Number std_dev)
+void gaussian_random(void *rng, Number *x1, Number *x2, Number mean, Number std_dev)
 {
-	Box_Muller(x1, x2);
+	Box_Muller(rng, x1, x2);
 
 	*x1 = mean + std_dev * *x1;
 	*x2 = mean + std_dev * *x2;
@@ -47,18 +46,18 @@ void gaussian_random(Number *x1, Number *x2, Number mean, Number std_dev)
 // Shuffling:
 
 
-// Fisher–Yates shuffle:
-void shuffle(void* *array, int len)
+// Fisher–Yates shuffle, for an array of pointers:
+void shuffle(void *rng, void* *array, int len)
 {
-	if (len - 1 > RAND_MAX)
-		printf("\nArray length is greater than RAND_MAX!\n\n");
+	// In case RNG32_MAX is small, for some (terrible) RNG...
+	if (len >= RNG32_MAX)
+		printf("\nArray length (%d) is greater or equal to RNG32_MAX!\n\n", len);
 
-	for (int i = len - 1; i >= 1; --i)
+	for (unsigned int i = len - 1; i >= 1; --i)
 	{
-		int j = rand() % (i + 1); // 0 ≤ j ≤ i. Biased, but negligeable.
+		unsigned int j = rng32_nextInt(rng) % (i + 1); // 0 ≤ j ≤ i. Biased, but negligeable.
 
 		void* temp = array[i];
-
 		array[i] = array[j];
 		array[j] = temp;
 	}

@@ -8,11 +8,11 @@
 #include "matrix.h"
 
 
-#define RECOG_THRESHOLD 0.5
+#define RECOG_THRESHOLD 0.5f
 
 
 // Returns the index of the greatest value in 'vector':
-inline static int maxValueIndex(const Number *vector, int len)
+static inline int maxValueIndex(const Number *vector, int len)
 {
 	int index = 0;
 	Number max = vector[0];
@@ -91,7 +91,7 @@ int findMostProbable(const Number *answer, int len, Number *confidence_level)
 		int binary_answer = answer[0] >= RECOG_THRESHOLD;
 
 		if (confidence_level != NULL)
-			*confidence_level = binary_answer ? answer[0] : 1. - answer[0];
+			*confidence_level = binary_answer ? answer[0] : 1.f - answer[0];
 
 		return binary_answer;
 	}

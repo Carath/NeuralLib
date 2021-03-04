@@ -9,12 +9,12 @@
 void exitFileError(FILE *file, const char *error_message, const char *filename);
 
 
-// Creating a folder:
-void createFolder(const char *foldername);
+// Creating a directory:
+void createDirectory(const char *directoryName);
 
 
 // Moves a file (and eventually renames it) to another location.
-// Returns 1 on success, 0 else (may happen if 'dest_path' contains non-existent folders).
+// Returns 1 on success, 0 else (may happen if 'dest_path' contains non-existent directories).
 int moveFile(const char *dest_path, const char *src_path);
 
 

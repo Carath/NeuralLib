@@ -19,7 +19,7 @@
 	FUN(Softmax)				\
 
 
-#define ADD_TO_LIST(OBJ) OBJ,
+#define ADD_TO_LIST(ENUM) ENUM,
 
 
 // Enum of activation functions:

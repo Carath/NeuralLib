@@ -51,11 +51,11 @@ void printNetwork(const NeuralNetwork *network, PrintOption opt);
 
 
 // Saving a neural network. N.B: MaxBatchSize doesn't need to be saved, for its value is arbitrary:
-int saveNetwork(const NeuralNetwork *network, const char *foldername);
+int saveNetwork(const NeuralNetwork *network, const char *directoryName);
 
 
 // Loading a neural network:
-NeuralNetwork* loadNetwork(const char *foldername, int MaxBatchSize);
+NeuralNetwork* loadNetwork(const char *directoryName, int MaxBatchSize);
 
 
 #endif
