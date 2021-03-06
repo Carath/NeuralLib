@@ -32,7 +32,7 @@ Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncomm
 sh cleanAndBuild.sh
 ```
 
-- For building each project separately, do in each folder:
+- For building each project separately, do in each directory:
 
 ```
 make clean
@@ -64,7 +64,7 @@ Go in the desired project directory, find the executable name, and type
 Potential incompatibilities:
 
 - Saved .txt files may have missing carriage returns (\r\n vs \n).
-- create_folder_1(), create_folder_2()
+- createDirectory()
 - getFileSize()
 - byte_swap_... functions
 
@@ -88,5 +88,5 @@ To index new instances, use the same command with ``` --no-skip ```
 - Add an early stopping mechanism, at least using quick estimations.
 - Support printing the loss function dynamically.
 - Support printing a basic confusion matrix. Bonus point: full stats per classes.
-- Update saved nets formats: infos.txt as .json, add endianness check and Number size data in binary files. Bonus point for adding checksums too.
+- Update saved nets formats: infos.txt as .json, add endianness check and Number size data in binary files. Bonus point for adding checksums, compression even!
 - Try the OpenCL lib for GPU computations, try CNN and RBM nets, and reinforcement learning. The sky the limit.
