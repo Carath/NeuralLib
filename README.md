@@ -32,12 +32,7 @@ Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncomm
 sh cleanAndBuild.sh
 ```
 
-- For building each project separately, do in each directory:
-
-```
-make clean
-make
-```
+- For building each project separately, do ``` make ``` in each directory. Note that when modifying header files, ``` make clean ``` must be run beforehand.
 
 - For cleaning and compressing the whole project to an archive placed in the same directory than the project is, type:
 
@@ -45,13 +40,10 @@ make
 sh compress.sh
 ```
 
-Note that either way may result in an error message in case object files
-are missing. This is totally benign. It may also be useful to emphasize here
-that doing a 'make clean' call can be necessary (before the 'make' one) in case
-only a header file has been modified, in a given project.
+Note that either way may result in an error message in case object files are missing. This is totally benign. It may also be useful to emphasize here that doing a 'make clean' call can be necessary (before the 'make' one) in case only a header file has been modified, in a given project.
 
 
-## Runtime:
+## Runtime
 
 Go in the desired project directory, find the executable name, and type
 (by replacing 'executable_name' by the correct one):
@@ -90,3 +82,8 @@ To index new instances, use the same command with ``` --no-skip ```
 - Support printing a basic confusion matrix. Bonus point: full stats per classes.
 - Update saved nets formats: infos.txt as .json, add endianness check and Number size data in binary files. Bonus point for adding checksums, compression even!
 - Try the OpenCL lib for GPU computations, try CNN and RBM nets, and reinforcement learning. The sky the limit.
+
+
+## Known issues
+
+SDL2 v2.0.10 causes a drawing bug: rendering something changes the color of a specific pixel of the last drawn object. This bug however is not present in versions 2.0.8 and 2.0.14. Should it arise, uninstall the libsdl2-dev package, then install [this one](https://packages.debian.org/sid/libsdl2-2.0-0) and [this one.](https://packages.debian.org/source/sid/libsdl2) Finally, libsdl2-image-dev and libsdl2-ttf-dev may need to be updated after that.
