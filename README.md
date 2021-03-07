@@ -18,7 +18,7 @@ sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libfreetype6-dev
 Official instructions and precompiled binaries can be found [here.](https://www.openblas.net/) To build from source, just run the script below (note that this step may take some time):
 
 ```
-install_OpenBLAS.sh
+sh install_OpenBLAS.sh
 ```
 
 Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncommented in ``` global_settings.mk ```. Futhermore, if OpenBLAS install directory has been changed, edit here the variable ``` HIGH_PERF_PATH ``` accordingly.
