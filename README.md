@@ -23,7 +23,7 @@ sh install_OpenBLAS.sh
 
 Finally, run ``` source ~/.bashrc ```
 
-Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncommented in ``` global_settings.mk ```. Futhermore, if OpenBLAS install directory has been changed, edit here the variable ``` HIGH_PERF_PATH ``` accordingly.
+Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncommented in ``` global_settings.mk ```. Futhermore, edit here the variable ``` HIGH_PERF_PATH ``` accordingly, if OpenBLAS install directory has been changed in *install_OpenBLAS.sh*.
 
 
 ## Compilation
@@ -41,8 +41,6 @@ sh cleanAndBuild.sh
 ```
 sh compress.sh
 ```
-
-Note that either way may result in an error message in case object files are missing. This is totally benign. It may also be useful to emphasize here that doing a 'make clean' call can be necessary (before the 'make' one) in case only a header file has been modified, in a given project.
 
 
 ## Runtime
