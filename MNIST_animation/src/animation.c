@@ -7,6 +7,8 @@
 #include "user_inputs.h"
 
 
+#define NET_SAVE_DIR "../MNIST_learning/saves"
+
 // Global variables:
 
 int MNIST_option;
@@ -70,9 +72,9 @@ void MNIST_animation(int modified_MNIST_option)
 	int max_batch_size = 100;
 
 	if (modified_MNIST_option)
-		network_loaded = loadNetwork("saves/MNIST_modified", max_batch_size);
+		network_loaded = loadNetwork(NET_SAVE_DIR"/MNIST_modified", max_batch_size);
 	else
-		network_loaded = loadNetwork("saves/MNIST_learned", max_batch_size);
+		network_loaded = loadNetwork(NET_SAVE_DIR"/MNIST_learned", max_batch_size);
 
 	if (network_loaded == NULL)
 	{

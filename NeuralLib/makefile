@@ -6,7 +6,7 @@ include ../global_settings.mk
 # Settings:
 
 # Executable name:
-EXE = test.exe
+EXE_NAME = test
 
 # Produced static library name:
 NEURAL_LIB = ../NeuralLib
@@ -14,9 +14,6 @@ NEURAL_LIB = ../NeuralLib
 # Source and objects files location:
 SRC_DIR = src
 OBJ_DIR = obj
-
-# Creates the OBJ_DIR directory, if necessary:
-$(shell mkdir -p $(OBJ_DIR))
 
 ##########################################################
 # Libraries:
@@ -44,17 +41,25 @@ LDFLAGS =
 LDLIBS = $(HIGH_PERF_LIB_DIR) $(HIGH_PERF_LINKING) -lm
 
 ##########################################################
-# Compiling rules:
+# Collecting files:
+
+# Creates the OBJ_DIR directory, if necessary:
+$(shell mkdir -p $(OBJ_DIR))
+
+EXE = $(EXE_NAME).exe
+
+# Sources and objects files:
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+
+##########################################################
+# Compilation rules:
 
 # The following names are not associated with files:
 .PHONY: all clean
 
 # All executables to be created:
 all: $(EXE)
-
-# Sources and objects files:
-SRC = $(wildcard $(SRC_DIR)/*.c)
-OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 # Linking the program:
 $(EXE): $(OBJ) $(NEURAL_LIB).a 
@@ -68,8 +73,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(NEURAL_LIB).a: $(OBJ)
 	ar rcs $@ $^
 
-##########################################################
 # Cleaning with 'make clean' the object files:
-
 clean:
 	rm -fv $(EXE) $(NEURAL_LIB).a $(OBJ_DIR)/*

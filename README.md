@@ -21,6 +21,8 @@ Official instructions and precompiled binaries can be found [here.](https://www.
 sh install_OpenBLAS.sh
 ```
 
+Finally, run ``` source ~/.bashrc ```
+
 Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncommented in ``` global_settings.mk ```. Futhermore, if OpenBLAS install directory has been changed, edit here the variable ``` HIGH_PERF_PATH ``` accordingly.
 
 

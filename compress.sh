@@ -1,14 +1,11 @@
 #!/bin/sh
 
 # This script purpose is to clean the whole project directory, and compress it
-# to an archive placed in the same directory than the project is.
+# to a .tgz archive placed in the same directory than the project is.
 # Launch it with the command:
 # sh compress.sh
-
-
-# Safer to get this at the beginning, since we may move between directories.
-PROJECT_PATH=$PWD
-
+# Extracting is done by running the command below, replacing 'filename' by the project name:
+# tar -xf filename.tgz
 
 clean()
 {
@@ -20,28 +17,20 @@ clean()
 	cd ..
 }
 
+# Get the current path before running other commands:
+PROJECT_PATH=$PWD
 
+# Cleaning the .o files and executables:
 clean NeuralLib
 clean MNIST_learning
 clean MNIST_animation
 
-
-# Cleaning unnecessary network saves:
-notUsedSavesDirectory=MNIST_learning/saves
-echo '\n'//////////////////////////////////////////////////
-echo // Cleaning the directory: $notUsedSavesDirectory
-echo //////////////////////////////////////////////////'\n'
-rm -rf $notUsedSavesDirectory/*
-echo Done.
-
-
 # Compressing the whole project directory:
-projectDirectory=$(basename -- "$PROJECT_PATH")
+PROJECT_DIR=$(basename -- "$PROJECT_PATH")
 echo '\n'//////////////////////////////////////////////////
-echo // Compressing the directory: $projectDirectory
+echo // Compressing the directory: $PROJECT_DIR
 echo //////////////////////////////////////////////////'\n'
-tar -czf ../$projectDirectory.tgz ../$projectDirectory
+tar -cf ../$PROJECT_DIR.tgz ../$PROJECT_DIR
 echo Done.
-
 
 exit

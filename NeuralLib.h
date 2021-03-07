@@ -1,6 +1,7 @@
 //////////////////////////////////////////////////////////
 // This file contains the public definitions and
 // functions from the 'NeuralLib' library.
+//////////////////////////////////////////////////////////
 
 #ifndef NEURAL_LIB_H
 #define NEURAL_LIB_H
@@ -10,8 +11,6 @@
 #if __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
 
 //////////////////////////////////////////////////////////
 // settings.h
@@ -402,11 +401,6 @@ void swap_matrix_double(double **matrix, int rows, int cols);
 
 // Used to measure elapsed time. Thread safe.
 double get_time(void);
-
-
-// Used to create RNG different seeds per nanosecond. A pointer to a memory block can
-// also be given to yield a unique seed per process, however it can be left to NULL.
-uint64_t create_seed(void *address);
 
 
 #if __cplusplus
