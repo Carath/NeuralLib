@@ -20,7 +20,12 @@ void pooling(Number *output, const Number *input, int output_width, int output_h
 void find_hull(const Number *image, int width, int height, int *colMin, int *colMax, int *rowMin, int *rowMax);
 
 
+// 'src' and 'dest' must not overlap!
 void recenter(Number *dest, const Number *src, int width, int height);
+
+
+// 'src' and 'dest' must not overlap!
+void slide(Number *dest, const Number *src, int width, int height, int delta_row, int delta_col);
 
 
 #endif

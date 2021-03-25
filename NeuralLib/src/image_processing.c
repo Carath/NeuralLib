@@ -1,7 +1,10 @@
 #include <stdio.h>
-#include <math.h>
+#include <string.h>
 
 #include "image_processing.h"
+
+
+#define THRESHOLD (1.f/512.f)
 
 
 // Print in the console a grayscale image contained in a 1-dimensional array:
@@ -16,7 +19,7 @@ void printGrayscaleImage(const Number *image, int width, int height)
 		{
 			const int pos = row * width + col;
 
-			if (number_abs(image[pos]) > EPSILON)
+			if (image[pos] > THRESHOLD)
 				printf("%5.1f", image[pos]);
 			else
 				printf("     ");
@@ -29,17 +32,20 @@ void printGrayscaleImage(const Number *image, int width, int height)
 }
 
 
-static inline Number maxMatrix_case(const Number *image, int image_width,
+static inline Number maxPixel(const Number *image, int image_width,
 	int kernel_width, int kernel_height, int row, int col)
 {
-	Number max = -INFINITY;
+	Number max = -1.f;
 
 	int shift = row * image_width + col;
 
 	for (int kernelRow = 0; kernelRow < kernel_height; ++kernelRow)
 	{
 		for (int kernelCol = 0; kernelCol < kernel_width; ++kernelCol)
-			max = number_max(max, image[shift + kernelCol]);
+		{
+			Number grey = image[shift + kernelCol];
+			max = grey > max ? grey : max;
+		}
 
 		shift += image_width;
 	}
@@ -48,7 +54,7 @@ static inline Number maxMatrix_case(const Number *image, int image_width,
 }
 
 
-static inline Number averageMatrix_case(const Number *image, int image_width,
+static inline Number averagePixel(const Number *image, int image_width,
 	int kernel_width, int kernel_height, int row, int col)
 {
 	Number sum = 0;
@@ -96,19 +102,27 @@ void pooling(Number *output, const Number *input, int output_width, int output_h
 
 	// printf("\nkernel_height = %d\nkernel_width = %d\n", kernel_height, kernel_width);
 
-	for (int row = 0; row < output_height; ++row)
+	if (poolmeth == MAX_POOLING)
 	{
-		for (int col = 0; col < output_width; ++col)
+		for (int row = 0; row < output_height; ++row)
 		{
-			Number caseRowCol;
+			for (int col = 0; col < output_width; ++col)
+			{
+				output[row * output_width + col] = maxPixel(input, input_width, kernel_width, kernel_height,
+					row * kernel_height, col * kernel_width);
+			}
+		}
+	}
 
-			if (poolmeth == MAX_POOLING)
-				caseRowCol = maxMatrix_case(input, input_width, kernel_width, kernel_height, row * kernel_height, col * kernel_width);
-
-			else // AVERAGE_POOLING
-				caseRowCol = averageMatrix_case(input, input_width, kernel_width, kernel_height, row * kernel_height, col * kernel_width);
-
-			output[row * output_width + col] = caseRowCol;
+	else // AVERAGE_POOLING
+	{
+		for (int row = 0; row < output_height; ++row)
+		{
+			for (int col = 0; col < output_width; ++col)
+			{
+				output[row * output_width + col] = averagePixel(input, input_width, kernel_width, kernel_height,
+					row * kernel_height, col * kernel_width);
+			}
 		}
 	}
 }
@@ -123,38 +137,31 @@ void find_hull(const Number *image, int width, int height, int *rowMin, int *row
 		return;
 	}
 
-	int rowmin = height - 1, rowmax = 0, colmin = width - 1, colmax = 0; // starting from the opposite edges.
+	// starting from the opposite edges:
+	*rowMin = height - 1;
+	*rowMax = 0;
+	*colMin = width - 1;
+	*colMax = 0;
 
 	for (int row = 0; row < height; ++row)
 	{
 		for (int col = 0; col < width; ++col)
 		{
-			if (image[row * width + col] > EPSILON)
+			if (image[row * width + col] > THRESHOLD)
 			{
-				if (col < colmin)
-					colmin = col;
-
-				if (col > colmax)
-					colmax = col;
-
-				if (row < rowmin)
-					rowmin = row;
-
-				if (row > rowmax)
-					rowmax = row;
+				*colMin = col < *colMin ? col : *colMin;
+				*colMax = col > *colMax ? col : *colMax;
+				*rowMin = row < *rowMin ? row : *rowMin;
+				*rowMax = row > *rowMax ? row : *rowMax;
 			}
 		}
 	}
 
-	*colMin = colmin;
-	*colMax = colmax;
-	*rowMin = rowmin;
-	*rowMax = rowmax;
-
-	// printf("colMin = %d\ncolMax = %d\nrowMin = %d\nrowMax = %d\n", colmin, colmax, rowmin, rowmax);
+	// printf("colMin = %d\ncolMax = %d\nrowMin = %d\nrowMax = %d\n", *colMin, *colMax, *rowMin, *rowMax);
 }
 
 
+// 'src' and 'dest' must not overlap!
 void recenter(Number *dest, const Number *src, int width, int height)
 {
 	if (dest == NULL || src == NULL)
@@ -163,29 +170,38 @@ void recenter(Number *dest, const Number *src, int width, int height)
 		return;
 	}
 
-	const int pixel_number = width * height;
-
-	// Resetting dest:
-	for (int k = 0; k < pixel_number; ++k)
-		dest[k] = 0;
-
 	int colMin, colMax, rowMin, rowMax;
-
 	find_hull(src, width, height, &rowMin, &rowMax, &colMin, &colMax);
 
-	const int delta_row = (height - rowMax - rowMin - 1) / 2;
-	const int delta_col = (width - colMax - colMin - 1) / 2;
+	const int delta_row = (height - rowMax - rowMin) / 2;
+	const int delta_col = (width - colMax - colMin) / 2;
+
+	slide(dest, src, width, height, delta_row, delta_col);
+}
+
+
+// 'src' and 'dest' must not overlap!
+void slide(Number *dest, const Number *src, int width, int height, int delta_row, int delta_col)
+{
+	if (dest == NULL || src == NULL)
+	{
+		printf("\nNULL src or dest passed for sliding.\n\n");
+		return;
+	}
 
 	const int shift = delta_row * width + delta_col;
+	const int rowMin = MAX(0, -delta_row), rowMax = height + MIN(0, -delta_row);
+	const int colMin = MAX(0, -delta_col), colMax = width + MIN(0, -delta_col);
 
-	for (int row = rowMin; row <= rowMax; ++row)
+	// Resetting dest:
+	memset(dest, 0, width * height * sizeof(Number));
+
+	for (int row = rowMin; row < rowMax; ++row)
 	{
-		for (int col = colMin; col <= colMax; ++col)
+		for (int col = colMin; col < colMax; ++col)
 		{
 			const int old_pos = row * width + col;
-
-			if (src[old_pos] > EPSILON)
-				dest[old_pos + shift] = src[old_pos];
+			dest[shift + old_pos] = src[old_pos];
 		}
 	}
 }

@@ -374,7 +374,12 @@ void pooling(Number *output, const Number *input, int output_width, int output_h
 	int input_width, int input_height, PoolingMode poolmeth);
 
 
+// 'src' and 'dest' must not overlap!
 void recenter(Number *dest, const Number *src, int width, int height);
+
+
+// 'src' and 'dest' must not overlap!
+void slide(Number *dest, const Number *src, int width, int height, int delta_row, int delta_col);
 
 
 //////////////////////////////////////////////////////////

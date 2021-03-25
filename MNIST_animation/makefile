@@ -11,7 +11,7 @@ EXE_NAME = animation
 # Used static library name:
 NEURAL_LIB = ../NeuralLib
 
-# Source and objects files location:
+# Source and object files locations:
 SRC_DIR = src
 OBJ_DIR = obj
 
@@ -42,11 +42,11 @@ endif
 PROCESSOR_ARCH = -march=native
 
 # N.B: gcc for C, g++ for C++, alternative: clang.
-CC = gcc
-CPPFLAGS =
-CFLAGS = -std=c99 -Wall -O2 $(PROCESSOR_ARCH) $(POSIX_OPT) -D_$(NUMBER_TYPE) -D_$(HIGH_PERF_LIB) $(HIGH_PERF_HEAD_DIR) $(GRAPHIC_FLAGS)
-LDFLAGS =
-LDLIBS = $(NEURAL_LIB).a $(HIGH_PERF_LIB_DIR) $(HIGH_PERF_LINKING) $(GRAPHIC_LINKS) -lm
+CC := gcc
+CPPFLAGS :=
+CFLAGS := -std=c99 -Wall -O2 $(PROCESSOR_ARCH) $(POSIX_OPT) -D_$(NUMBER_TYPE) -D_$(HIGH_PERF_LIB) $(HIGH_PERF_HEAD_DIR) $(GRAPHIC_FLAGS)
+LDFLAGS :=
+LDLIBS := $(NEURAL_LIB).a $(HIGH_PERF_LIB_DIR) $(HIGH_PERF_LINKING) $(GRAPHIC_LINKS) -lm
 
 ##########################################################
 # Collecting files:
@@ -54,11 +54,11 @@ LDLIBS = $(NEURAL_LIB).a $(HIGH_PERF_LIB_DIR) $(HIGH_PERF_LINKING) $(GRAPHIC_LIN
 # Creates the OBJ_DIR directory, if necessary:
 $(shell mkdir -p $(OBJ_DIR))
 
-EXE = $(EXE_NAME).exe
-
-# Sources and objects files:
-SRC = $(wildcard $(SRC_DIR)/*.c)
-OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+# Executable, sources, objects files and dependencies:
+EXE := $(EXE_NAME).exe
+SRC := $(wildcard $(SRC_DIR)/*.c)
+OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+DEP := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.d)
 
 ##########################################################
 # Compilation rules:
@@ -75,8 +75,10 @@ $(EXE): $(OBJ)
 
 # Compiling the source files:
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) -MP -MD $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+-include $(DEP)
 
 # Cleaning with 'make clean' the object files:
 clean:
-	rm -fv $(EXE) $(OBJ_DIR)/*
+	rm -fv $(EXE) $(OBJ_DIR)/*.o $(OBJ_DIR)/*.d

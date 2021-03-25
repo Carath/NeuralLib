@@ -1,46 +1,78 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h> // to init rand()
 
 #include "MNIST_learning.h"
 #include "MNIST_loading.h"
+
+
+#define ENABLE_SHIFTING 1
+#define PIXELS_SHIFT 5
+
+
+static void shift_MNIST_Inputs(Inputs *MNIST_inputs)
+{
+	if (!ENABLE_SHIFTING)
+		return;
+
+	srand(time(NULL));
+
+	Number *tmp = (Number*) calloc(MNIST_inputs -> QuestionsSize, sizeof(Number));
+
+	for (int i = 0; i < MNIST_inputs -> InputNumber; ++i)
+	{
+		int delta_row = rand() % (2 * PIXELS_SHIFT) - PIXELS_SHIFT;
+		int delta_col = rand() % (2 * PIXELS_SHIFT) - PIXELS_SHIFT;
+
+		memcpy(tmp, MNIST_inputs -> Questions[i], MNIST_inputs -> QuestionsSize * sizeof(Number));
+		slide(MNIST_inputs -> Questions[i], tmp, MNIST_IMAGE_WIDTH, MNIST_IMAGE_HEIGHT, delta_row, delta_col);
+	}
+
+	free(tmp);
+}
 
 
 // Modified MNIST inputs: the dataset images are randomly mirrored,
 // and the mirrored status is placed at the (new) last index of the answers:
 static Inputs* modified_MNIST_inputs(const Inputs *MNIST_inputs)
 {
+	srand(time(NULL));
+
 	int inputs_number = MNIST_inputs -> InputNumber;
 	int question_size = MNIST_inputs -> QuestionsSize;
 	int answer_size = MNIST_inputs -> AnswersSize;
 
 	// 2 times more inputs, answers have 1 more dimension:
-	Number **new_Questions = createMatrix(2 * inputs_number, question_size);
-	Number **new_Answers = createMatrix(2 * inputs_number, answer_size + 1);
+	Number **new_Questions = createMatrix(inputs_number, question_size);
+	Number **new_Answers = createMatrix(inputs_number, answer_size + 1);
 
-	for (int i = 0; i < 2 * inputs_number; i += 2)
+	for (int i = 0; i < inputs_number; ++i)
 	{
-		for (int j = 0; j < question_size; ++j)
-		{
-			int row = j / MNIST_IMAGE_WIDTH;
-			int col = j % MNIST_IMAGE_HEIGHT;
-			int j_symmetric = row * MNIST_IMAGE_WIDTH + MNIST_IMAGE_WIDTH - 1 - col;
+		int mirroring = 0;
 
-			new_Questions[i][j] = MNIST_inputs -> Questions[i / 2][j];
-			new_Questions[i+1][j] = MNIST_inputs -> Questions[i / 2][j_symmetric];
+		if (MNIST_inputs -> Answers[i][0] != 1 && MNIST_inputs -> Answers[i][8] != 1) // 0 and 8 are symmetric.
+			mirroring = rand() % 2;
+
+		for (int row = 0; row < MNIST_IMAGE_HEIGHT; ++row)
+		{
+			for (int col = 0; col < MNIST_IMAGE_WIDTH; ++col)
+			{
+				int pixel = row * MNIST_IMAGE_WIDTH + col;
+				int pixel_sym = row * MNIST_IMAGE_WIDTH + MNIST_IMAGE_WIDTH - 1 - col;
+				int pixel_used = mirroring ? pixel_sym : pixel;
+
+				new_Questions[i][pixel] = MNIST_inputs -> Questions[i][pixel_used];
+			}
 		}
 
-		for (int j = 0; j < answer_size; ++j)
-		{
-			new_Answers[i][j] = MNIST_inputs -> Answers[i / 2][j];
-			new_Answers[i+1][j] = MNIST_inputs -> Answers[i / 2][j];
-		}
+		memcpy(new_Answers[i], MNIST_inputs -> Answers[i], answer_size * sizeof(Number));
 
 		// Last index: mirroring status:
-		new_Answers[i][answer_size] = 0;
-		new_Answers[i+1][answer_size] = 1; // N.B: 0 and 8 are symmetric: too bad.
+		new_Answers[i][answer_size] = mirroring;
 	}
 
-	return createInputs(2 * inputs_number, question_size, answer_size + 1, new_Questions, new_Answers);
+	return createInputs(inputs_number, question_size, answer_size + 1, new_Questions, new_Answers);
 }
 
 
@@ -69,6 +101,8 @@ void MNIST_learn(const char *MNIST_dir_path)
 	// Loading the MNIST training dataset:
 	Inputs *training_inputs = MNIST_createInputs(MNIST_dir_path, MNIST_TRAINING);
 
+	shift_MNIST_Inputs(training_inputs);
+
 	// Creating a neural network:
 
 	int max_batch_size = 100;
@@ -94,10 +128,8 @@ void MNIST_learn(const char *MNIST_dir_path)
 	params -> RecogEstimates = MAX_VALUE;
 
 	params -> EpochNumber = 10;
-
-	params -> BatchSize = 100;
+	params -> BatchSize = 64;
 	params -> BatchSizeMultiplier = 1.;
-
 	params -> LearningRate = 0.005;
 	params -> LearningRateMultiplier = 0.9;
 
@@ -154,13 +186,15 @@ void MNIST_modified(const char *MNIST_dir_path)
 
 	Inputs *new_training_inputs = modified_MNIST_inputs(training_inputs);
 
+	shift_MNIST_Inputs(new_training_inputs);
+
 	freeInputs(&training_inputs);
 
 	// Creating a neural network:
 
 	int max_batch_size = 100;
-	int NeuronsNumberArray[] = {512, 64, 32, 11};
-	Activation funArray[] = {ReLu, ReLu, ReLu, Sigmoid};
+	int NeuronsNumberArray[] = {512, 128, 64, 32, 11};
+	Activation funArray[] = {ReLu, ReLu, ReLu, ReLu, Sigmoid};
 
 	int layer_number = ARRAYS_COMPARE_LENGTH(NeuronsNumberArray, funArray);
 
@@ -181,12 +215,10 @@ void MNIST_modified(const char *MNIST_dir_path)
 	params -> RecogEstimates = ALL_CORRECT; // default.
 
 	params -> EpochNumber = 10;
-
-	params -> BatchSize = 100;
+	params -> BatchSize = 64;
 	params -> BatchSizeMultiplier = 1.;
-
-	params -> LearningRate = 0.003;
-	params -> LearningRateMultiplier = 0.95;
+	params -> LearningRate = 0.005;
+	params -> LearningRateMultiplier = 0.8;
 
 	// Learning process:
 

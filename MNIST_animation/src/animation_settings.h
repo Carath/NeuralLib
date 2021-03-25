@@ -10,7 +10,7 @@
 // without issues, one would need to store the static parts of the scene in a dedicated texture.
 
 #define WINDOW_WIDTH 1600
-#define WINDOW_HEIGHT 800
+#define WINDOW_HEIGHT 900
 
 #define BUTTON_WIDTH 100
 #define BUTTON_HEIGHT 100

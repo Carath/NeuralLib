@@ -34,8 +34,7 @@ Once this is done, make sure the line ``` HIGH_PERF_LIB = OPENBLAS ``` is uncomm
 sh cleanAndBuild.sh
 ```
 
-- For building each project separately, do ``` make ``` in each directory. Note that when modifying header files, ``` make clean ``` must be run beforehand.
-
+- For building each project separately, do ``` make ``` in each directory.
 - For cleaning and compressing the whole project to an archive placed in the same directory than the project is, type:
 
 ```
