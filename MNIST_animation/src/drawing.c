@@ -10,8 +10,8 @@
 #define Y_BIG_STEP 50
 
 #define BUTTON_OFFSET ((WINDOW_WIDTH - BUTTON_WIDTH) / 2)
+#define X_GUESS ((WINDOW_WIDTH + BUTTON_WIDTH) / 2 + SIZE_GAP)
 
-static const int X_guess = (WINDOW_WIDTH + BUTTON_WIDTH) / 2 + SIZE_GAP;
 
 SDL_Rect rect_button_clear =
 {
@@ -49,9 +49,9 @@ void draw_neurons_line(SDL_Rect *rectangle, const NeuronLayer *layer,
 		{
 			// Neurons activation:
 
-			int channel_color = convert(layer -> Output[start + i]);
+			int color_channel = convert(layer -> Output[start + i]);
 
-			SDLA_SetDrawColor(0, channel_color, 0);
+			SDLA_SetDrawColor(0, color_channel, 0);
 
 			SDL_RenderFillRect(renderer, rectangle);
 		}
@@ -127,8 +127,7 @@ void drawing(void)
 		return;
 
 	// For monitoring the drawing time of each frame:
-	// struct timespec start, finish;
-	// get_time(&start);
+	// double time_0 = get_time();
 
 	if (redraw_scene)
 	{
@@ -163,13 +162,13 @@ void drawing(void)
 		SDLA_SlowDrawText(font_medium, &Yellow, rect_button_clear.x + 12, rect_button_clear.y + 30, "Clear");
 		SDLA_SlowDrawText(font_medium, &Yellow, rect_button_go.x + 25, rect_button_go.y + 30, "Go!");
 		SDLA_SlowDrawText(font_medium, &Yellow, rect_frame.x - 5, rect_frame.y - 45, "Draw here!");
-		SDLA_SlowDrawText(font_medium, &Yellow, X_guess, rect_button_clear.y, "Guess:");
-		SDLA_SlowDrawText(font_medium, &Yellow, X_guess, rect_button_go.y, "Confidence:");
+		SDLA_SlowDrawText(font_medium, &Yellow, X_GUESS, rect_button_clear.y, "Guess:");
+		SDLA_SlowDrawText(font_medium, &Yellow, X_GUESS, rect_button_go.y, "Confidence:");
 
 		if (!clear_state)
 		{
-			SDLA_SlowDrawText(font_big, &Yellow, X_guess + 30, rect_button_clear.y + 40, answer_str);
-			SDLA_SlowDrawText(font_big, &Yellow, X_guess + 30, rect_button_go.y + 40, confidence_str);
+			SDLA_SlowDrawText(font_big, &Yellow, X_GUESS + 30, rect_button_clear.y + 40, answer_str);
+			SDLA_SlowDrawText(font_big, &Yellow, X_GUESS + 30, rect_button_go.y + 40, confidence_str);
 		}
 
 		redraw_scene = 0;
@@ -181,19 +180,19 @@ void drawing(void)
 	SDLA_SetDrawColor(255, 255, 255);
 	SDL_RenderDrawRect(renderer, &rect_frame);
 
-	// get_time(&finish);
-	// printf("Frame time: %.3f ms\n", 1000. * precise_time(&start, &finish));
+	// double time_1 = get_time();
+	// printf("Frame time: %.3f ms\n", 1000. * (time_1 - time_0));
 }
 
 
 // Maps values from the real line to [0, 255]:
 inline int convert(Number value)
 {
-	if (value > 1)
+	if (value > 1.f)
 		return 255;
 
-	if (value < 0)
+	if (value < 0.f)
 		return 0;
 
-	return 255 * value;
+	return (int) (255.f * value);
 }

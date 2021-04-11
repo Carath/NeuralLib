@@ -6,35 +6,16 @@
 #include "animation_settings.h"
 
 
-#define MNIST_ANSWER_SIZE 10 // 10 digits: from 0 to 9.
-#define MNIST_IMAGE_WIDTH 28
-#define MNIST_IMAGE_HEIGHT 28
-
-
-extern int MNIST_option;
-
 extern SDL_Renderer *renderer;
-
-extern NeuralNetwork *network_loaded;
-extern Inputs *image_input;
 
 extern int pixels_number;
 extern int pitch;
 extern SDL_Texture *texture_drawing;
 extern uint32_t *pixels_texture;
-extern Number *pixels_converted;
-extern Number *pixels_centered;
-extern Number *pixels_resized;
 
 extern int quit;
 extern int render_scene;
 extern int redraw_scene;
-extern int clear_state;
-
-extern char answer_str[10];
-extern char confidence_str[10];
-
-extern CenteringOption centerOpt;
 
 extern SDL_Rect rect_button_clear;
 extern SDL_Rect rect_button_go;

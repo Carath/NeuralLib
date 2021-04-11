@@ -30,23 +30,7 @@ void input_control(void)
 		{
 			// SDL_Log("Mouse Button 1 (left) is pressed: %d, %d", mouse_x, mouse_y);
 
-			// Top left corner of the dot:
-			int Xcorner = mouse_x - DOT_SIZE / 2 - rect_frame.x;
-			int Ycorner = mouse_y - DOT_SIZE / 2 - rect_frame.y;
-
-			int Xmin = MAX(0, Xcorner);
-			int Xmax = MIN(FRAME_WIDTH - 1, Xcorner + DOT_SIZE - 1);
-
-			int Ymin = MAX(0, Ycorner);
-			int Ymax = MIN(FRAME_HEIGHT - 1, Ycorner + DOT_SIZE - 1);
-
-			// Filling the pixels with a black dot:
-			for (int i = Ymin; i <= Ymax; ++i)
-			{
-				for (int j = Xmin; j <= Xmax; ++j)
-					pixels_texture[i * FRAME_WIDTH + j] = 0;
-			}
-
+			fill_texture_drawing(mouse_x, mouse_y, DOT_SIZE);
 			SDL_UpdateTexture(texture_drawing, NULL, pixels_texture, pitch);
 
 			render_scene = 1;
@@ -59,7 +43,6 @@ void input_control(void)
 		else if (is_in_rect(&rect_button_clear, mouse_x, mouse_y))
 		{
 			clear_pixels_texture(pixels_texture, pixels_number);
-
 			SDL_UpdateTexture(texture_drawing, NULL, pixels_texture, pitch);
 
 			render_scene = 1;
@@ -125,6 +108,30 @@ void input_control(void)
 			clear_state = 0;
 		}
 	}
+}
+
+
+// Fill the texture with the current dot:
+void fill_texture_drawing(int mouse_x, int mouse_y, int used_dot_size)
+{
+	// Top left corner of the dot:
+	int Xcorner = mouse_x - used_dot_size / 2 - rect_frame.x;
+	int Ycorner = mouse_y - used_dot_size / 2 - rect_frame.y;
+
+	int Xmin = MAX(0, Xcorner);
+	int Xmax = MIN(FRAME_WIDTH - 1, Xcorner + used_dot_size - 1);
+
+	int Ymin = MAX(0, Ycorner);
+	int Ymax = MIN(FRAME_HEIGHT - 1, Ycorner + used_dot_size - 1);
+
+	// Filling the pixels with a black dot:
+	for (int i = Ymin; i <= Ymax; ++i)
+	{
+		for (int j = Xmin; j <= Xmax; ++j)
+			pixels_texture[i * FRAME_WIDTH + j] = 0;
+	}
+
+	SDL_UpdateTexture(texture_drawing, NULL, pixels_texture, pitch);
 }
 
 
