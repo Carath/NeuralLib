@@ -70,40 +70,43 @@ void input_control(void)
 		else if (is_in_rect(&rect_button_go, mouse_x, mouse_y))
 		{
 			printf("\n");
-			clear_pixels_texture(pixels_texture, pixels_number);
-
-			for (int i = 0; i < pixel_rank; ++i)
+			if (pixel_rank != 0)
 			{
-				if (i > 0 && i < pixel_rank - 1)
-				{
-					Vector2D u = {
-						.x = Buffer_x[i] - Buffer_x[i - 1],
-						.y = Buffer_y[i] - Buffer_y[i - 1]
-					};
-					Vector2D v = {
-						.x = Buffer_x[i + 1] - Buffer_x[i],
-						.y = Buffer_y[i + 1] - Buffer_y[i]
-					};
+				clear_pixels_texture(pixels_texture, pixels_number);
 
-					float theta = angle(&u, &v); // in [-pi, pi[
-					printf("i: %3d, theta: %8.3f°\n", i, theta * 180.f / (float) M_PI);
+				for (int i = 0; i < pixel_rank; ++i)
+				{
+					if (i > 0 && i < pixel_rank - 1)
+					{
+						Vector2D u = {
+							.x = Buffer_x[i] - Buffer_x[i - 1],
+							.y = Buffer_y[i] - Buffer_y[i - 1]
+						};
+						Vector2D v = {
+							.x = Buffer_x[i + 1] - Buffer_x[i],
+							.y = Buffer_y[i + 1] - Buffer_y[i]
+						};
+
+						float theta = angle(&u, &v); // in [-pi, pi[
+						printf("i: %3d, theta: %8.3f°\n", i, theta * 180.f / (float) M_PI);
+					}
+
+					// Adding 0.5f to get the closest integer:
+					int mouse_x = (int) (0.5f + Buffer_x[i] * rect_frame.w + rect_frame.x);
+					int mouse_y = (int) (0.5f + Buffer_y[i] * rect_frame.h + rect_frame.y);
+
+					// printf("=> i: %3d, r_x: %.3f, r_y: %.3f\n", i, Buffer_x[i], Buffer_y[i]);
+					// printf("=> i: %3d, mouse_x: %3d, mouse_y: %3d\n", i, mouse_x, mouse_y);
+
+					fill_texture_drawing(mouse_x, mouse_y, SMALL_DOT_SIZE);
 				}
 
-				// Adding 0.5f to get the closest integer:
-				int mouse_x = (int) (0.5f + Buffer_x[i] * rect_frame.w + rect_frame.x);
-				int mouse_y = (int) (0.5f + Buffer_y[i] * rect_frame.h + rect_frame.y);
+				SDL_UpdateTexture(texture_drawing, NULL, pixels_texture, pitch);
 
-				// printf("=> i: %3d, r_x: %.3f, r_y: %.3f\n", i, Buffer_x[i], Buffer_y[i]);
-				// printf("=> i: %3d, mouse_x: %3d, mouse_y: %3d\n", i, mouse_x, mouse_y);
-
-				fill_texture_drawing(mouse_x, mouse_y, SMALL_DOT_SIZE);
+				pixel_rank = 0;
+				render_scene = 1;
+				redraw_scene = 1;
 			}
-
-			SDL_UpdateTexture(texture_drawing, NULL, pixels_texture, pitch);
-
-			pixel_rank = 0;
-			render_scene = 1;
-			redraw_scene = 1;
 		}
 
 
