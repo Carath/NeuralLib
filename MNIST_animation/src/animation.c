@@ -30,8 +30,8 @@ int pitch;
 SDL_Texture *texture_drawing = NULL;
 uint32_t *pixels_texture = NULL;
 Number *pixels_converted = NULL;
-Number *pixels_centered = NULL;
-Number *pixels_resized = NULL;
+Number *pixels_preprocessed = NULL;
+Number *pixels_downscaled = NULL;
 
 int quit;
 int render_scene;
@@ -43,7 +43,8 @@ char answer_str[10];
 char confidence_str[10];
 
 // CenteringOption centerOpt = RAW;
-CenteringOption centerOpt = RECENTERING; // better!
+// CenteringOption centerOpt = RECENTERING; // better!
+CenteringOption centerOpt = RESIZING; // even better!
 
 
 // Animating the recognition of the MNIST dataset:
@@ -113,11 +114,16 @@ void MNIST_animation(int modified_MNIST_option)
 	if (centerOpt == RECENTERING)
 	{
 		printf("\nRecentering activated.\n\n");
-
-		pixels_centered = (Number*) calloc(pixels_number, sizeof(Number));
+		pixels_preprocessed = (Number*) calloc(pixels_number, sizeof(Number));
 	}
 
-	pixels_resized = (Number*) calloc(question_size, sizeof(Number));
+	if (centerOpt == RESIZING)
+	{
+		printf("\nResizing activated.\n\n");
+		pixels_preprocessed = (Number*) calloc(pixels_number, sizeof(Number));
+	}
+
+	pixels_downscaled = (Number*) calloc(question_size, sizeof(Number));
 
 	////////////////////////////////////////////////////////////
 	// First drawing:
@@ -145,15 +151,14 @@ void MNIST_animation(int modified_MNIST_option)
 			// ++frame_index;
 
 			SDL_RenderPresent(renderer);
-
 			render_scene = 0;
 		}
 	}
 
 	// Freeing everything:
 
-	free(pixels_resized);
-	free(pixels_centered);
+	free(pixels_downscaled);
+	free(pixels_preprocessed);
 	free(pixels_converted);
 	free(pixels_texture);
 

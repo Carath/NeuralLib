@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "image_processing.h"
@@ -129,19 +130,17 @@ void pooling(Number *output, const Number *input, int output_width, int output_h
 
 
 // Find the hull of the given image, assuming it has a white background:
-void find_hull(const Number *image, int width, int height, int *rowMin, int *rowMax, int *colMin, int *colMax)
+void find_hull(const Number *image, int width, int height, Box *box)
 {
-	if (image == NULL)
+	if (! image || ! box)
 	{
-		printf("\nCannot find the hull of a NULL image.\n\n");
+		printf("\nCannot find the hull of a NULL image or box.\n\n");
 		return;
 	}
 
 	// starting from the opposite edges:
-	*rowMin = height - 1;
-	*rowMax = 0;
-	*colMin = width - 1;
-	*colMax = 0;
+	int rowMin = height - 1, rowMax = 0;
+	int colMin = width - 1, colMax = 0;
 
 	for (int row = 0; row < height; ++row)
 	{
@@ -149,15 +148,20 @@ void find_hull(const Number *image, int width, int height, int *rowMin, int *row
 		{
 			if (image[row * width + col] > THRESHOLD)
 			{
-				*colMin = col < *colMin ? col : *colMin;
-				*colMax = col > *colMax ? col : *colMax;
-				*rowMin = row < *rowMin ? row : *rowMin;
-				*rowMax = row > *rowMax ? row : *rowMax;
+				rowMin = row < rowMin ? row : rowMin;
+				rowMax = row > rowMax ? row : rowMax;
+				colMin = col < colMin ? col : colMin;
+				colMax = col > colMax ? col : colMax;
 			}
 		}
 	}
 
-	// printf("colMin = %d\ncolMax = %d\nrowMin = %d\nrowMax = %d\n", *colMin, *colMax, *rowMin, *rowMax);
+	box -> rowMin = rowMin;
+	box -> rowMax = rowMax;
+	box -> colMin = colMin;
+	box -> colMax = colMax;
+
+	// printf("rowMin = %d\nrowMax = %d\ncolMin = %d\ncolMax = %d\n", rowMin, rowMax, colMin, colMax);
 }
 
 
@@ -170,11 +174,11 @@ void recenter(Number *dest, const Number *src, int width, int height)
 		return;
 	}
 
-	int colMin, colMax, rowMin, rowMax;
-	find_hull(src, width, height, &rowMin, &rowMax, &colMin, &colMax);
+	Box box = {0};
+	find_hull(src, width, height, &box);
 
-	const int delta_row = (height - rowMax - rowMin) / 2;
-	const int delta_col = (width - colMax - colMin) / 2;
+	const int delta_row = (height - box.rowMax - box.rowMin) / 2;
+	const int delta_col = (width - box.colMax - box.colMin) / 2;
 
 	slide(dest, src, width, height, delta_row, delta_col);
 }
@@ -202,6 +206,62 @@ void slide(Number *dest, const Number *src, int width, int height, int delta_row
 		{
 			const int old_pos = row * width + col;
 			dest[shift + old_pos] = src[old_pos];
+		}
+	}
+}
+
+
+// Resize and recenter the image, with the given margin ratio, which must be in ]0, 1[.
+// 'src' and 'dest' must not overlap!
+void resize(Number *dest, const Number *src, int width, int height, float marginRatio, UpscalingOption option)
+{
+	Box box = {0};
+	find_hull(src, width, height, &box);
+
+	int boxWidth = box.colMax - box.colMin, boxHeight = box.rowMax - box.rowMin;
+	int imageDim = MIN(width, height), boxDim = MAX(boxWidth, boxHeight);
+	float scale = (1.f - 2.f * marginRatio) * imageDim / boxDim;
+	float offsetRow = scale * ((boxDim - boxHeight) / 2.f - box.rowMin) + (height - imageDim) / 2.f + marginRatio * imageDim;
+	float offsetCol = scale * ((boxDim - boxWidth) / 2.f - box.colMin) + (width - imageDim) / 2.f + marginRatio * imageDim;
+
+	printf("\n-> scale: %.3f\n", scale);
+
+	// Resetting dest:
+	memset(dest, 0, width * height * sizeof(Number));
+
+	for (int row = box.rowMin; row < box.rowMax; ++row)
+	{
+		for (int col = box.colMin; col < box.colMax; ++col)
+		{
+			const int old_pos = row * width + col;
+			const int new_row = (int) (scale * row + offsetRow + 0.5f);
+			const int new_col = (int) (scale * col + offsetCol + 0.5f);
+
+			int newDotSize = (int) (scale + 0.5f);
+			newDotSize = MAX(1, newDotSize);
+
+			const int sq_rowMin = MAX(0, new_row - newDotSize / 2);
+			const int sq_colMin = MAX(0, new_col - newDotSize / 2);
+			const int sq_rowMax = MIN(height, new_row + (newDotSize + 1) / 2);
+			const int sq_colMax = MIN(width, new_col + (newDotSize + 1) / 2);
+
+			for (int sq_row = sq_rowMin; sq_row < sq_rowMax; ++sq_row)
+			{
+				for (int sq_col = sq_colMin; sq_col < sq_colMax; ++sq_col)
+				{
+					const int pos = sq_row * width + sq_col;
+
+					if (option == PIXEL_MAX) {
+						dest[pos] = MAX(dest[pos], src[old_pos]);
+					}
+					else { // PIXEL_SUM: Summing with transparency - less stable:
+						int d1_dist = abs(sq_row - new_row) + abs(sq_col - new_col);
+						float alpha = 1.f - (float) d1_dist / newDotSize * 0.5f; // 0.5f arbitrary.
+						dest[pos] += src[old_pos] * alpha;
+						dest[pos] = MIN(1.f, dest[pos]);
+					}
+				}
+			}
 		}
 	}
 }

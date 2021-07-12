@@ -19,13 +19,13 @@
 #define FRAME_HEIGHT 140
 
 #define SIZE_GAP 100
-#define DOT_SIZE 13
+#define DOT_SIZE 8
 #define NEURON_SIZE 15
 
 #define PRINTING_PIXELS 1 // for debugging.
 
 
-typedef enum {RAW, RECENTERING} CenteringOption;
+typedef enum {RAW, RECENTERING, RESIZING} CenteringOption;
 
 
 #endif

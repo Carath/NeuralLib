@@ -64,18 +64,24 @@ void input_control(void)
 
 			if (centerOpt == RECENTERING)
 			{
-				recenter(pixels_centered, pixels_converted, FRAME_WIDTH, FRAME_HEIGHT);
-
-				pixels_used = pixels_centered;
+				recenter(pixels_preprocessed, pixels_converted, FRAME_WIDTH, FRAME_HEIGHT);
+				pixels_used = pixels_preprocessed;
 			}
 
-			pooling(pixels_resized, pixels_used, MNIST_IMAGE_WIDTH, MNIST_IMAGE_HEIGHT,
+			else if (centerOpt == RESIZING)
+			{
+				float marginRatio = 2.f / 28.f; // 2 pixels of margin for 28x28 images.
+				resize(pixels_preprocessed, pixels_converted, FRAME_WIDTH, FRAME_HEIGHT, marginRatio, PIXEL_MAX);
+				pixels_used = pixels_preprocessed;
+			}
+
+			pooling(pixels_downscaled, pixels_used, MNIST_IMAGE_WIDTH, MNIST_IMAGE_HEIGHT,
 				FRAME_WIDTH, FRAME_HEIGHT, AVERAGE_POOLING);
 
 			if (PRINTING_PIXELS)
 			{
-				printf("\npixels_resized:\n\n");
-				printGrayscaleImage(pixels_resized, MNIST_IMAGE_WIDTH, MNIST_IMAGE_HEIGHT);
+				printf("\npixels_downscaled:\n\n");
+				printGrayscaleImage(pixels_downscaled, MNIST_IMAGE_WIDTH, MNIST_IMAGE_HEIGHT);
 			}
 
 			// Recognition:
@@ -85,7 +91,7 @@ void input_control(void)
 
 			Number *the_question = image_input -> Questions[0], *the_answer = image_input -> Answers[0];
 
-			copyVector(the_question, pixels_resized, question_size);
+			copyVector(the_question, pixels_downscaled, question_size);
 
 			prediction(network_loaded, image_input);
 

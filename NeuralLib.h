@@ -365,6 +365,8 @@ void load_toMatrix(Number **matrix, int rows, int cols, const char *filename);
 
 typedef enum {MAX_POOLING, AVERAGE_POOLING} PoolingMode;
 
+typedef enum {PIXEL_MAX, PIXEL_SUM} UpscalingOption;
+
 
 // Print in the console a grayscale image contained in a 1-dimensional array:
 void printGrayscaleImage(const Number *image, int width, int height);
@@ -380,6 +382,11 @@ void recenter(Number *dest, const Number *src, int width, int height);
 
 // 'src' and 'dest' must not overlap!
 void slide(Number *dest, const Number *src, int width, int height, int delta_row, int delta_col);
+
+
+// Resize and recenter the image, with the given margin ratio, which must be in ]0, 1[.
+// 'src' and 'dest' must not overlap!
+void resize(Number *dest, const Number *src, int width, int height, float marginRatio, UpscalingOption option);
 
 
 //////////////////////////////////////////////////////////

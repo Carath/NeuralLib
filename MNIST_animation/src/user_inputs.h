@@ -23,8 +23,8 @@ extern int pitch;
 extern SDL_Texture *texture_drawing;
 extern uint32_t *pixels_texture;
 extern Number *pixels_converted;
-extern Number *pixels_centered;
-extern Number *pixels_resized;
+extern Number *pixels_preprocessed;
+extern Number *pixels_downscaled;
 
 extern int quit;
 extern int render_scene;
