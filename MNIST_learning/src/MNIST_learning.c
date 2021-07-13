@@ -101,7 +101,7 @@ void MNIST_learn(const char *MNIST_dir_path)
 	// Loading the MNIST training dataset:
 	Inputs *training_inputs = MNIST_createInputs(MNIST_dir_path, MNIST_TRAINING);
 
-	shift_MNIST_Inputs(training_inputs);
+	// shift_MNIST_Inputs(training_inputs);
 
 	// Creating a neural network:
 
@@ -131,7 +131,7 @@ void MNIST_learn(const char *MNIST_dir_path)
 	params -> BatchSize = 64;
 	params -> BatchSizeMultiplier = 1.;
 	params -> LearningRate = 0.005;
-	params -> LearningRateMultiplier = 0.9;
+	params -> LearningRateMultiplier = 0.95;
 
 	// Learning process:
 
