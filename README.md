@@ -10,7 +10,7 @@ Only Linux (Ubuntu) is supported at this time.
 * Installing the graphical library SDL2, and some FreeType fonts. This is only needed for the MNIST animation:
 
 ```
-sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libfreetype6-dev
+sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libfreetype6-dev fonts-dejavu
 ```
 
 * Installing OpenBLAS, the high performance library for fast matrix products on CPUs. Optional, but highly recommended for fast learning.
