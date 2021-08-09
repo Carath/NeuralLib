@@ -220,9 +220,9 @@ void resize(Number *dest, const Number *src, int width, int height, float margin
 
 	int boxWidth = box.colMax - box.colMin, boxHeight = box.rowMax - box.rowMin;
 	int imageDim = MIN(width, height), boxDim = MAX(boxWidth, boxHeight);
-	float scale = (1.f - 2.f * marginRatio) * imageDim / boxDim;
-	float offsetRow = scale * ((boxDim - boxHeight) / 2.f - box.rowMin) + (height - imageDim) / 2.f + marginRatio * imageDim;
-	float offsetCol = scale * ((boxDim - boxWidth) / 2.f - box.colMin) + (width - imageDim) / 2.f + marginRatio * imageDim;
+	float scale = boxDim == 0 ? 1.f : (1.f - 2.f * marginRatio) * imageDim / boxDim;
+	float offsetRow = (height - scale * (box.rowMin + box.rowMax)) / 2.f;
+	float offsetCol = (width - scale * (box.colMin + box.colMax)) / 2.f;
 
 	printf("\n-> scale: %.3f\n", scale);
 
